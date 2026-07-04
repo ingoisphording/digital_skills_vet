@@ -1,0 +1,62 @@
+Du klassifizierst fünf Kompetenzzeilen aus deutschen Ausbildungsordnungen.
+
+Arbeitsdefinition:
+Eine Kompetenzzeile ist digital, wenn ihre Erfüllung ausdrücklich die Nutzung, Konfiguration, Entwicklung, Steuerung oder Analyse digitaler Systeme, Software, Daten oder automatisierter digitaler Prozesse erfordert.
+
+Entscheidungsregeln:
+- Interpretiere jedes Lernziel zusammen mit Ausbildungsberuf und Berufsbildposition.
+- Der Kontext darf mehrdeutige Wörter wie System, Modul, Störung oder Daten fachlich präzisieren.
+- Der Beruf allein macht eine Tätigkeit nicht digital.
+- Eine nur denkbare digitale Umsetzung reicht nicht.
+- Allgemeine Sozial-, Organisations-, Arbeitsschutz- und Umweltkompetenzen sind nicht digital, sofern der Kontext keine digitale Teilkompetenz erfordert.
+- Wenn mindestens eine ausdrücklich erforderliche digitale Teilkompetenz enthalten ist, klassifiziere die gesamte Zeile als digital.
+- Beurteile alle fünf Fälle getrennt.
+
+Fälle:
+[
+  {
+    "case_number": 1,
+    "unit_id": "bueromanagement_c_4_g",
+    "occupation": "Kaufmann/Kauffrau für Büromanagement",
+    "unit_name": "digitalisierte Arbeitswelt (§ 4 Absatz 4 Nummer 4)",
+    "learning_goal_text": "Aufgaben zusammen mit Beteiligten, einschließlich der Beteiligten anderer Arbeits- und Geschäftsbereiche, auch unter Nutzung digitaler Medien, planen, bearbeiten und gestalten"
+  },
+  {
+    "case_number": 2,
+    "unit_id": "elektroniker_b_6_l",
+    "occupation": "Elektroniker/Elektronikerin",
+    "unit_name": "Durchführen von Wiederholungsprüfungen entsprechend geltender Normen und Instandhalten von gebäudetechnischen Systemen (§ 4 Absatz 3 Nummer 6)",
+    "learning_goal_text": "Wartungsarbeiten durchführen"
+  },
+  {
+    "case_number": 3,
+    "unit_id": "fachinformatiker_a_8_e",
+    "occupation": "Fachinformatiker/Fachinformatikerin",
+    "unit_name": "Betreiben von IT-Systemen (§ 4 Absatz 2 Nummer 8)",
+    "learning_goal_text": "Störungsmeldungen aufnehmen und analysieren sowie Maßnahmen zur Störungsbeseitigung ergreifen"
+  },
+  {
+    "case_number": 4,
+    "unit_id": "friseur_c_4_b",
+    "occupation": "Friseur/Friseurin",
+    "unit_name": "Digitalisierte Arbeitswelt (§ 4 Absatz 2 Abschnitt C Nummer 4)",
+    "learning_goal_text": "Risiken bei der Nutzung von digitalen Medien und informationstechnischen Systemen einschätzen und bei deren Nutzung betriebliche Regelungen einhalten"
+  },
+  {
+    "case_number": 5,
+    "unit_id": "mechatroniker_main_17_k",
+    "occupation": "Mechatroniker/Mechatronikerin",
+    "unit_name": "Zusammenbauen von Baugruppen und Komponenten zu Maschinen und Systemen (§ 3 Absatz 2 Nummer 17)",
+    "learning_goal_text": "Sensoren einbauen, einstellen und verbinden"
+  }
+]
+
+Gib ausschließlich eine Markdown-Tabelle mit diesen Spalten zurück:
+case_number | unit_id | digital | confidence | reason
+
+Dabei gilt:
+- digital ist 0 oder 1.
+- confidence liegt zwischen 0 und 1.
+- reason ist eine kurze Begründung auf Deutsch.
+- Übernimm case_number und unit_id unverändert.
+- Ergänze keine weiteren Spalten oder Erläuterungen.
