@@ -1,0 +1,2 @@
+training_rows,test_rows,test_positive,test_negative,vocabulary_size,minimum_document_frequency,ridge_lambda,classification_threshold
+50,10,5,5,75,2,1,0.5

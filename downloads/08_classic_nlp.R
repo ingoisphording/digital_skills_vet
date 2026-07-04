@@ -29,9 +29,20 @@ setwd(project_root)
 dir.create("data/derived", recursive = TRUE, showWarnings = FALSE)
 dir.create("output/tables", recursive = TRUE, showWarnings = FALSE)
 
+# Im internen Projekt wird die vollständige Dozierendendatei verwendet. Das
+# öffentliche Selbstlernprojekt enthält stattdessen nur die für die
+# Modellschätzung erforderlichen Analysevariablen.
+reference_path <- if (
+  file.exists("data/manual/instructor/instructor_reference_template.csv")
+) {
+  "data/manual/instructor/instructor_reference_template.csv"
+} else {
+  "data/model/modeling_data.csv"
+}
+
 # Jede Zeile ist ein Beobachtungsfall; reference_label ist die Zielvariable.
 reference <- readr::read_csv(
-  "data/manual/instructor/instructor_reference_template.csv",
+  reference_path,
   show_col_types = FALSE,
   locale = readr::locale(encoding = "UTF-8")
 ) |>

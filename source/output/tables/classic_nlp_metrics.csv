@@ -1,0 +1,3 @@
+evaluation,n,accuracy,precision,recall,f1,true_positive,true_negative,false_positive,false_negative
+stratifizierte Testmenge,10,0.5,,0,,0,5,0,5
+Leave-one-occupation-out,60,0.6166666666666667,0.3333333333333333,0.15,0.20689655172413793,3,34,6,17

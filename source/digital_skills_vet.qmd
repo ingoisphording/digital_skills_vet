@@ -16,6 +16,7 @@ execute:
   message: false
 params:
   show_reference: false
+  self_study_solutions: true
 ---
 
 ```{r}
@@ -45,27 +46,69 @@ manual_sample <- read_csv(
   show_col_types = FALSE,
   locale = locale(encoding = "UTF-8")
 )
+
+# Diese zehn Fälle bilden zugleich die studentische Kodieraufgabe und die
+# zurückgehaltene Testmenge des klassischen Modells.
+exercise_sample <- read_csv(
+  "data/self_study/student_coding_template.csv",
+  show_col_types = FALSE,
+  locale = locale(encoding = "UTF-8")
+)
+
+coding_solution <- read_csv(
+  "data/self_study/coding_solution.csv",
+  show_col_types = FALSE,
+  locale = locale(encoding = "UTF-8")
+)
 ```
 
 ## Lernziele
 
-Nach dieser Übung können Sie
+In dieser Übung lernen Sie
 
-1. begründen, warum Ausbildungsordnungen eine wertvolle Textdatenquelle für
+1. zu begründen, warum Ausbildungsordnungen eine wertvolle Textdatenquelle für
    die Berufsbildungsforschung sind,
 2. den Weg vom Ausbildungstext zur messbaren Forschungsvariable
-   nachvollziehen: **Digitalisierung, Konzeptualisierung, Extraktion und
+   nachzuvollziehen: **Digitalisierung, Konzeptualisierung, Extraktion und
    Validierung**,
-3. Handkodierung, Supervised ML/NLP und LLM-Klassifikation unterscheiden und
-   ihre Vor- und Nachteile einordnen sowie
-4. Kompetenzbeschreibungen anhand eines dokumentierten Codebuchs kodieren.
+3. verschiedene Klassifikationsverfahren — **Handkodierung, Supervised ML/NLP
+   und LLM-Klassifikation** — zu unterscheiden und ihre Vor- und Nachteile
+   einzuordnen,
+4. Kompetenzbeschreibungen anhand eines dokumentierten Codebuchs zu kodieren.
+
 
 ::: {.callout-note}
-## Materialien und Quellcode
+## Zwei Bearbeitungswege
 
-Die Übung läuft vollständig im Browser. Zur Prüfung der technischen Umsetzung
-stehen die [Quarto-Quelldatei](source/digital_skills_vet.qmd) und das
-[kommentierte NLP-Skript](downloads/08_classic_nlp.R) bereit.
+**Ohne lokale Installation:** Lesen Sie die Übung im Browser und bearbeiten Sie
+die bereitgestellten CSV-Vorlagen. Die angezeigten R-Ergebnisse sind bereits
+reproduzierbar berechnet.
+
+**Mit ausführbarem R-Code:** Laden oder klonen Sie das
+[GitHub-Repository](https://github.com/ingoisphording/digital_skills_vet),
+öffnen Sie in RStudio zuerst `source/digital_skills_vet.Rproj` und führen Sie
+anschließend [`source/setup.R`](source/setup.R) aus. Öffnen Sie danach
+`source/digital_skills_vet.qmd`. Nun können Sie einzelne Codeblöcke mit dem
+grünen Ausführungspfeil starten oder das gesamte Dokument mit **Render** neu
+erzeugen.
+
+Für den zweiten Weg benötigen Sie R sowie RStudio mit Quarto. R-Vorkenntnisse
+werden nicht vorausgesetzt; der Code ist zum schrittweisen Nachvollziehen
+kommentiert.
+
+:::
+
+::: {.callout-tip}
+## Arbeitsumfang und Ergebnis
+
+Planen Sie etwa **90 Minuten** ein. Am Ende verfügen Sie über
+
+1. eine ausgefüllte Kodierdatei mit zehn Kompetenzzeilen,
+2. je eine Ergebnisdatei für zwei frei zugängliche Chatmodelle und
+3. kurze schriftliche Antworten auf die Reflexions- und Vergleichsfragen.
+
+Die Auflösungen stehen jeweils unmittelbar nach der betreffenden Aufgabe.
+Öffnen Sie sie erst, nachdem Sie Ihre eigene Entscheidung dokumentiert haben.
 :::
 
 ## Ausbildungsordnungen als Forschungsressource
@@ -76,26 +119,27 @@ Kenntnisse und Fähigkeiten sowie Prüfungsanforderungen fest. Dadurch machen
 sie Kompetenzanforderungen zwischen Berufen und — bei mehreren Fassungen —
 über die Zeit vergleichbar.
 
-::: {.callout-important}
-## Kernvariable
+Wir betrachten heute fünf Ausbildungsordnungen: 
 
-Im Lehrvortrag lautet die Kurzform „vermittelte und geprüfte Kompetenzen und
-Fertigkeiten“. Empirisch beobachten wir hier jedoch zunächst nur die
-**curricular festgelegten Kompetenzanforderungen im Ordnungstext**. Ob diese
-Kompetenzen tatsächlich vermittelt oder erworben wurden, lässt sich aus der
-Ausbildungsordnung allein nicht ableiten.
-:::
+1. Kaufmann/Kauffrau für Büromanagement
+2. Elektroniker/-in 
+3. Fachinformatiker/-in
+4. Friseur/-in
+5. Mechatroniker/-in 
 
-Die fünf Ordnungen dieser Übung stammen aus unterschiedlichen Jahren. Wir
-vergleichen damit Berufe, aber noch keine Neuordnungen desselben Berufes über
+Wir vergleichen diese Ausbildungsordnungen in ihrer jeweils aktuell gültigen Fassung, aber keine Neuordnungen desselben Berufes über
 die Zeit. Die im Lehrvortrag betonte Längsschnittdimension wäre ein
-weiterführendes Forschungsdesign.
+weiterführendes Forschungsdesign. 
+
+
+
+
 
 ## Forschungsfrage
 
-> Wie hoch ist der Anteil von Kompetenzbeschreibungen, die als digitale
-> Kompetenzen klassifiziert werden, und wie stark hängt das Ergebnis von der
-> gewählten Textmethode ab?
+> Wie hoch ist der Anteil der in den Ausbildungsordnungen beschriebenen Kompetenzen, die als "digital"
+> klassifiziert werden? Wie stark hängt das Ergebnis von der
+> gewählten Klassifikationsmethode ab?
 
 Wir vergleichen im weiteren Verlauf drei Vorgehensweisen:
 
@@ -103,13 +147,13 @@ Wir vergleichen im weiteren Verlauf drei Vorgehensweisen:
 2. Supervised ML/NLP mit einem klassischen Klassifikationsmodell und
 3. LLM-gestützte Klassifikation.
 
-In diesem Teil der Übung wird noch **kein Modell geschätzt**. Zunächst werden
-Analyseeinheit, Messkonzept und Referenzpunkt geklärt.
+Bevor wir mit der eigentlichen Extraktion beginnen, müssen wir 
+Analyseeinheit, Messkonzept und Referenzpunkt klären.
 
 ## Was ist unsere Analyseeinheit?
 
-Die Ausbildungsrahmenpläne bündeln Fertigkeiten, Kenntnisse und Fähigkeiten in
-Berufsbildpositionen. Innerhalb dieser Positionen stehen buchstabierte
+In modernen Ausbildungsordnungen sind Fertigkeiten, Kenntnisse und Fähigkeiten in
+Berufsbildpositionen gebündelt. Innerhalb dieser Positionen stehen buchstabierte
 Lernziele wie `a)`, `b)` oder `c)`. Ein solcher Unterpunkt bildet in dieser
 Übung eine **Kompetenzzeile** \(l\). „Lernziel“ und „Kompetenzzeile“
 bezeichnen im Folgenden dieselbe Analyseeinheit.
@@ -209,7 +253,7 @@ digitaler Bezug erkennbar ist.
 Diese Definition ist eine diskutierbare Arbeitsdefinition. Sie muss
 feststehen, bevor ein Modell trainiert oder ein Prompt formuliert wird.
 
-Der Lehrvortrag nutzt zunächst zwei klare Ankerbeispiele:
+Im Lehrvortrag haben wir zwei zugegebenermaßen plakative Ankerbeispiele gesehen:
 
 - „Teilaufgaben von IT-Systemen automatisieren“  
   \(\rightarrow\) digitale Kompetenz
@@ -217,8 +261,7 @@ Der Lehrvortrag nutzt zunächst zwei klare Ankerbeispiele:
   unterscheiden“  
   \(\rightarrow\) keine digitale Kompetenz
 
-Diese Beispiele verdeutlichen die Kategorie, ersetzen aber kein Codebuch für
-schwierigere Fälle.
+Diese Beispiele verdeutlichen die Kategorie, jedoch wird es bei der tatsächlichen Kategorisierung häufig zu Grenzfällen kommen.
 
 | Möglicher Grenzfall | Zu klärende Frage |
 |---|---|
@@ -239,11 +282,11 @@ flowchart LR
     C --> D["4. Validierung<br/>unabhängige Handkodierung,<br/>Fehleranalyse, externe Evidenz"]
 ```
 
-Diese Reihenfolge entspricht der Logik des Lehrvortrags:
+Diese Reihenfolge entspricht der Logik, die wir im Lehrvortrag gehört haben:
 
 1. **Digitalisierung:** Die amtlichen HTML-Anlagen werden als unveränderte
    Snapshots gesichert. Scraping und Segmentierung machen die Lernziele
-   maschinenlesbar.
+   maschinenlesbar (der Schritt ist hier bereits geschehen).
 2. **Konzeptualisierung:** Wir entscheiden, welche Textstelle eine Einheit
    bildet, was „digital“ bedeutet und welche Zielgröße gemessen werden soll.
 3. **Extraktion:** Der eigentliche Text-as-Data-Schritt überführt jedes
@@ -257,7 +300,7 @@ Die technische Tabellenextraktion in Schritt 1 ist also nicht dasselbe wie die
 inhaltliche Extraktion der Forschungsvariable in Schritt 3. Fehler bei der
 Digitalisierung lassen sich nicht durch ein besseres Klassifikationsmodell
 beheben. Ebenso kann ein leistungsfähiges Modell eine unklare
-Konzeptualisierung nicht ersetzen.
+Konzeptualisierung nicht ersetzen. Für die hier genutzten aktuellen Fassungen ist dies aber auch kein Problem -- sie liegen bereits digital vor.
 
 Die verwendeten amtlichen Quellen sind:
 
@@ -283,14 +326,17 @@ sources |>
 
 Für die reproduzierbare Analyse wurden die HTML-Seiten am dokumentierten
 Abrufdatum unverändert gespeichert. Die Klassifikation arbeitet mit diesen
-Snapshots, nicht mit einer möglicherweise später geänderten Live-Seite.
+Snapshots, um nicht von Veränderungen der Live-Seite betroffen zu sein. 
 
 ## Aufgabe 1: Quelle und Datensatz vergleichen
 
-Wählen Sie in Zweiergruppen einen Ausbildungsberuf aus.
+Die angezeigte Vergleichsstichprobe verwendet den Beruf
+Fachinformatiker/Fachinformatikerin. Wenn Sie die Übung mit R ausführen,
+können Sie stattdessen einen anderen Ausbildungsberuf wählen und dessen genaue
+Bezeichnung im Code unter `ausgewaehlter_beruf` eintragen.
 
 1. Öffnen Sie die amtliche HTML-Anlage aus der Quellentabelle.
-2. Wählen Sie im Datensatz drei Kompetenzzeilen dieses Berufs aus.
+2. Vergleichen Sie die drei angezeigten Kompetenzzeilen mit dieser Quelle.
 3. Suchen Sie die jeweilige Berufsbildposition und den Buchstaben in der
    HTML-Anlage.
 4. Prüfen Sie:
@@ -309,12 +355,20 @@ Der folgende Code erzeugt eine reproduzierbare Vergleichsstichprobe:
 set.seed(20260702)
 
 # Der feste Seed erzeugt bei jedem Lauf dieselbe Zufallsstichprobe.
+# Ersetzen Sie den Text durch die genaue Bezeichnung des gewählten Berufs.
+ausgewaehlter_beruf <- "Fachinformatiker/Fachinformatikerin"
+
+# Eine verständliche Fehlermeldung ausgeben, falls die Bezeichnung nicht exakt
+# mit einem Eintrag im Datensatz übereinstimmt.
+if (!ausgewaehlter_beruf %in% curriculum$occupation) {
+  stop("Der eingetragene Ausbildungsberuf wurde im Datensatz nicht gefunden.")
+}
+
 vergleich <- curriculum |>
-  # Innerhalb jedes Berufs wird genau eine Zeile ausgewählt.
-  group_by(occupation_id) |>
-  slice_sample(n = 1) |>
-  # Nach der Auswahl wird die Gruppierung nicht mehr benötigt.
-  ungroup() |>
+  # Zunächst nur die Zeilen des ausgewählten Berufs behalten.
+  filter(occupation == ausgewaehlter_beruf) |>
+  # Aus diesem Beruf drei Kompetenzzeilen zufällig auswählen.
+  slice_sample(n = 3) |>
   # Nur die für den Quellenvergleich benötigten Spalten behalten.
   select(
     occupation,
@@ -332,7 +386,7 @@ vergleich |>
       "Beruf", "ID", "Berufsbildposition", "Buchstabe",
       "Original-Unterpunkt", "Inhaltstyp", "Quelle"
     ),
-    caption = "Eine Vergleichszeile je Ausbildungsberuf"
+    caption = paste("Drei Vergleichszeilen:", ausgewaehlter_beruf)
   )
 ```
 
@@ -369,12 +423,10 @@ Tätigkeiten allein aufgrund Ihrer allgemeinen Kenntnis des Berufs.
 ```{r}
 #| label: aufgabe-handkodierung
 
-set.seed(20260702)
-
-# Die Ziehung erfolgt ohne Vorauswahl nach vermuteter Digitalität.
-kodieraufgabe <- curriculum |>
-  slice_sample(n = 10) |>
-  # transmute() benennt Spalten um und ergänzt leere Eingabefelder.
+# Diese zehn Fälle werden später auch zur Prüfung des klassischen Modells
+# verwendet. Die Referenzlabels sind in der Eingabedatei nicht enthalten.
+kodieraufgabe <- exercise_sample |>
+  # transmute() benennt Spalten um und zeigt kompakte Eingabefelder.
   transmute(
     Nr. = row_number(),
     Beruf = occupation,
@@ -386,10 +438,12 @@ kodieraufgabe <- curriculum |>
   )
 
 kodieraufgabe |>
-  kable(caption = "Arbeitsblatt für die erste Handkodierung")
+  kable(caption = "Zehn zurückgehaltene Fälle für die Handkodierung")
 ```
 
-Besprechen Sie anschließend Ihre Entscheidungen:
+Tragen Sie Ihre Entscheidungen in die
+[Kodiermaske mit zehn Fällen](downloads/student_coding_template.csv) ein.
+Reflektieren und notieren Sie anschließend:
 
 1. Welche Wörter und Kontextinformationen waren für Ihre Entscheidung
    ausschlaggebend?
@@ -398,11 +452,12 @@ Besprechen Sie anschließend Ihre Entscheidungen:
 4. Welche Regel müsste dokumentiert werden, bevor dieselben Texte automatisch
    klassifiziert werden?
 
-## Formale Handkodierungsstichprobe
+## Grundlage des klassischen Modells
 
-Für die anschließende Validierung wurde eine größere, reproduzierbare
-Stichprobe mit zwölf zufälligen Kompetenzzeilen je Beruf vorbereitet. Sie
-enthält insgesamt 60 Einheiten.
+Die dozierendenseitige Modellierungsstichprobe enthält zwölf zufällige
+Kompetenzzeilen je Beruf, insgesamt also 60 Einheiten. Die zehn von Ihnen
+kodierten Fälle werden vollständig zurückgehalten. Das klassische Modell wird
+nur mit den übrigen 50 Fällen trainiert.
 
 ```{r}
 #| label: tab-kodierstichprobe
@@ -417,8 +472,7 @@ manual_sample |>
   )
 ```
 
-Die [studentische Kodiermaske](downloads/student_coding_template.csv)
-enthält folgende Eingabefelder:
+Ihre Kodiermaske enthält folgende Eingabefelder:
 
 - `coder_id`: pseudonymisierte Kennung,
 - `occupation`, `section` und `unit_name`: Kontext zur Interpretation des
@@ -427,7 +481,8 @@ enthält folgende Eingabefelder:
 - `student_confidence`: Zahl zwischen `0` und `1`,
 - `student_rationale`: kurze Begründung.
 
-Jede kodierende Person arbeitet mit einer eigenen Kopie der Vorlage.
+Speichern Sie Ihre ausgefüllte Kopie unter einem neuen Dateinamen, damit die
+leere Vorlage erhalten bleibt.
 
 ::: {.callout-note}
 ## Referenzkodierung
@@ -439,7 +494,34 @@ Expertenentscheidung, deren Regeln und Unsicherheiten nachvollziehbar sein
 müssen.
 ::: 
 
-## Phase 4: Klassisches ML/NLP
+::: {.callout-tip collapse="true"}
+## Auflösung der zehn Handkodierungsfälle
+
+Öffnen Sie diesen Abschnitt erst nach Abschluss Ihrer eigenen Kodierung.
+Vergleichen Sie nicht nur die Labels, sondern insbesondere die dokumentierten
+Begründungen mit Ihren Entscheidungen.
+
+```{r}
+#| label: aufloesung-handkodierung
+#| echo: false
+
+if (isTRUE(params$self_study_solutions)) {
+  coding_solution |>
+    transmute(
+      Beruf = occupation,
+      Berufsbildposition = unit_name,
+      Kompetenzzeile = learning_goal_text,
+      Referenz = reference_label,
+      Begründung = reference_rationale
+    ) |>
+    kable(caption = "Dokumentierte Referenz für die zehn Übungsfälle")
+} else {
+  cat("> Die Auflösung ist in dieser Fassung deaktiviert.")
+}
+```
+:::
+
+## Klassisches ML/NLP
 
 Die klassische Pipeline bildet den dokumentierten Kontext jeder
 Kompetenzzeile als gemeinsamen Modelltext ab:
@@ -453,8 +535,10 @@ Kompetenzzeile als gemeinsamen Modelltext ab:
 \rightarrow \widehat D_{lo}.
 \]
 
-Das Skript [`scripts/08_classic_nlp.R`](downloads/08_classic_nlp.R) setzt diese
-Schritte ohne zusätzliche NLP-Bibliothek um:
+Das kommentierte Skript
+[`source/scripts/08_classic_nlp.R`](source/scripts/08_classic_nlp.R) setzt
+diese Schritte ohne zusätzliche NLP-Bibliothek um. Im lokalen R-Projekt können
+Sie es mit `source("scripts/08_classic_nlp.R")` vollständig neu ausführen.
 
 1. Der Text wird kleingeschrieben und in Wörter zerlegt.
 2. Häufige deutsche Funktionswörter werden entfernt.
@@ -492,7 +576,8 @@ auf einen ungesehenen Beruf übertragbar sind.
 #| echo: false
 #| results: asis
 
-if (!isTRUE(params$show_reference)) {
+if (!isTRUE(params$self_study_solutions) &&
+    !isTRUE(params$show_reference)) {
   cat(
     "> Die Modellresultate und Fehlerbeispiele werden zusammen mit der ",
     "Referenzkodierung erst nach der Handkodierung freigegeben."
@@ -584,17 +669,18 @@ if (!isTRUE(params$show_reference)) {
    Fehler durch die Textmerkmale, den beruflichen Kontext oder die
    Arbeitsdefinition?
 
-## Phase 5: Vergleich frei zugänglicher Chatmodelle
+## Vergleich frei zugänglicher Chatmodelle
 
 In dieser Phase gibt es **keine direkte LLM-Schnittstelle**. Sie verwenden in
-Kleingruppen einen frei zugänglichen Chatdienst im Browser, beispielsweise
-ChatGPT oder Gemini. Jede Gruppe lässt mit einem einzigen Prompt dieselben fünf
-Kompetenzzeilen klassifizieren.
+Einzelarbeit zwei frei zugängliche Chatdienste im Browser, beispielsweise
+ChatGPT und Gemini. Sie lassen von beiden Diensten mit demselben Prompt
+dieselben fünf Kompetenzzeilen klassifizieren.
 
 ::: {.callout-important}
 ## Vergleichsdesign
 
-- Alle Gruppen verwenden exakt denselben Prompt und dieselben fünf Fälle.
+- Verwenden Sie für beide Chatmodelle exakt denselben Prompt und dieselben fünf
+  Fälle.
 - Beginnen Sie einen neuen Chat ohne vorherigen Gesprächskontext.
 - Verwenden Sie nur die erste Antwort. Korrigieren oder präzisieren Sie den
   Prompt anschließend nicht.
@@ -627,35 +713,41 @@ browser_sample |>
     col.names = c(
       "Fall", "Beruf", "Berufsbildposition", "Kompetenzzeile"
     ),
-    caption = "Gemeinsame Fälle für den Browser-Modellvergleich"
+    caption = "Identische Fälle für den Browser-Modellvergleich"
   )
 ```
 
-### Aufgabe 4: Fünf Fälle mit einem Chatmodell klassifizieren
+### Aufgabe 4: Fünf Fälle mit zwei Chatmodellen klassifizieren
 
-1. Teilen Sie die verfügbaren Chatmodelle zwischen den Gruppen auf. Wenn
-   möglich, bearbeiten mindestens zwei Gruppen dasselbe Modell, damit auch
-   Unterschiede zwischen einzelnen Läufen sichtbar werden.
-2. Öffnen Sie einen neuen Chat.
+1. Wählen Sie zwei frei zugängliche Chatmodelle aus.
+2. Öffnen Sie beim ersten Modell einen neuen Chat.
 3. Kopieren Sie den
    [vorbereiteten Prompt](downloads/classroom_model_comparison_prompt.txt)
    vollständig und unverändert in den Chat.
 4. Übertragen Sie die fünf Labels, Konfidenzen und Begründungen in eine Kopie
    der
    [Ergebnisvorlage](downloads/model_comparison_results_template.csv).
-5. Speichern Sie die Datei beispielsweise als
-   `gruppe_03_gemini.csv`.
+5. Speichern Sie die Datei unter dem Namen des verwendeten Dienstes,
+   beispielsweise als `chatgpt.csv`.
+6. Wiederholen Sie die Schritte 2 bis 5 mit dem zweiten Modell und einer neuen
+   Kopie der Ergebnisvorlage, beispielsweise `gemini.csv`.
 
 ::: {.callout-warning}
 ## Nur fünf Beobachtungen
 
-Die fünf Fälle ermöglichen eine kompakte Unterrichtsdiskussion, aber keine
+Die fünf Fälle ermöglichen eine kompakte Gegenüberstellung, aber keine
 belastbare Rangliste von Chatmodellen. Ein einzelner zusätzlicher Treffer
 verändert die Accuracy bereits um `0,20`. Berichten Sie deshalb neben der
 Trefferzahl immer die konkreten False Positives und False Negatives.
 :::
 
-Nach Abgabe der Modellantworten werden drei Größen auf exakt denselben Fällen
+::: {.callout-tip collapse="true"}
+## Auflösung des Modellvergleichs
+
+Öffnen Sie diesen Abschnitt erst, nachdem Sie die Antworten beider
+Chatmodelle gespeichert haben.
+
+Danach werden drei Größen auf exakt denselben Fällen
 verglichen:
 
 1. die Dozierendenreferenz,
@@ -668,15 +760,25 @@ verglichen:
 #| echo: false
 #| results: asis
 
-if (!isTRUE(params$show_reference)) {
+if (!isTRUE(params$self_study_solutions) &&
+    !isTRUE(params$show_reference)) {
   cat(
     "> Referenz und ML-Vorhersagen bleiben bis zur Abgabe der ",
     "Chatmodell-Ergebnisse ausgeblendet."
   )
 } else {
-  # Referenz und ML-Prognosen werden erst nach der studentischen Abgabe gezeigt.
+  # Die Selbstlernfassung enthält nur die fünf für diese Aufgabe benötigten
+  # Referenz- und ML-Werte. Interne Dozierendendateien bleiben ausgeschlossen.
+  model_comparison_path <- if (
+    file.exists("data/self_study/model_comparison_solution.csv")
+  ) {
+    "data/self_study/model_comparison_solution.csv"
+  } else {
+    "data/manual/instructor/model_comparison_reference.csv"
+  }
+
   model_comparison_reference <- read_csv(
-    "data/manual/instructor/model_comparison_reference.csv",
+    model_comparison_path,
     show_col_types = FALSE,
     locale = locale(encoding = "UTF-8")
   )
@@ -695,7 +797,7 @@ if (!isTRUE(params$show_reference)) {
     print()
 
   if (file.exists("output/tables/classroom_model_comparison_metrics.csv")) {
-    cat("\n\n### Ergebnisse der Gruppen\n\n")
+    cat("\n\n### Ergebnisse der Chatmodelle\n\n")
     read_csv(
       "output/tables/classroom_model_comparison_metrics.csv",
       show_col_types = FALSE
@@ -714,17 +816,19 @@ if (!isTRUE(params$show_reference)) {
   } else {
     cat(
       "\n\n> Die Ergebnistabelle entsteht erst aus den tatsächlichen ",
-      "Gruppenabgaben; es werden keine Modellantworten vorab eingesetzt."
+      "Modellantworten; es werden keine Antworten vorab eingesetzt."
     )
   }
 }
 ```
+:::
 
 ### Leitfragen zum Modellvergleich
 
-1. Bei welchen Fällen stimmen alle Chatmodelle überein?
+1. Bei welchen Fällen stimmen beide Chatmodelle überein?
 2. Welches Modell folgt dem beruflichen Kontext statt einzelnen Schlüsselwörtern?
-3. Unterscheiden sich zwei Gruppen trotz desselben Chatdienstes?
+3. Wo unterscheiden sich die beiden Modelle trotz identischer Fälle und
+   identischem Prompt?
 4. Welche Fehler macht das klassische ML, welche die Chatmodelle?
 5. Ist eine plausible Begründung mit einem korrekten Label gleichzusetzen?
 
@@ -736,9 +840,9 @@ unterscheiden sich im Aufwand, in der Transparenz und in der Skalierbarkeit.
 
 | Verfahren | Typisches Vorgehen | Vorteil | Nachteil |
 |---|---|---|---|
-| Handkodierung | Kodierende wenden ein Codebuch auf Lernziele an und diskutieren Uneinigkeiten. | höchste inhaltliche Kontrolle und Transparenz | hoher Zeitaufwand, schlecht skalierbar |
+| Handkodierung | Kodierende wenden ein Codebuch auf Lernziele an und dokumentieren Grenzfälle. | höchste inhaltliche Kontrolle und Transparenz | hoher Zeitaufwand, schlecht skalierbar |
 | Supervised ML/NLP | Handkodierte Trainingsdaten → numerische Textmerkmale, etwa TF-IDF → Klassifikationsmodell → Anwendung auf den Rest des Korpus | nach dem Training auf große Korpora skalierbar | benötigt ausreichend gelabelte Trainingsdaten; Generalisierung unsicher |
-| Browserbasierte LLM-Klassifikation | Gruppen übergeben denselben Prompt und dieselben fünf Fälle an frei zugängliche Chatmodelle. | ohne API oder lokale Installation durchführbar; mehrere Modelle direkt vergleichbar | Modellversion und Laufbedingungen nur begrenzt kontrollierbar; fünf Fälle erlauben keine belastbare Rangliste |
+| Browserbasierte LLM-Klassifikation | Dieselbe Person übergibt denselben Prompt und dieselben fünf Fälle an zwei frei zugängliche Chatmodelle. | ohne API oder lokale Installation durchführbar; zwei Modelle direkt vergleichbar | Modellversion und Laufbedingungen nur begrenzt kontrollierbar; fünf Fälle erlauben keine belastbare Rangliste |
 
 Beim Supervised ML/NLP darf die Evaluation nicht auf den Trainingsdaten
 erfolgen. Eine separate Testmenge wird vollständig zurückgehalten. Auch ein
@@ -766,7 +870,17 @@ alternativen Datenquellen, beispielsweise der
 BIBB/BAuA-Erwerbstätigenbefragung. Ein solcher Abgleich liegt außerhalb dieser
 stilisierten Übung.
 
-## Validierung: erst nach der studentischen Abgabe
+## Auflösungen in der Selbstlernfassung
+
+Die Selbstlernfassung zeigt die dokumentierte Referenz für die zehn
+Handkodierungsfälle sowie für die fünf Fälle des Chatmodellvergleichs. Damit
+können Sie Ihre Ergebnisse eigenständig prüfen. Öffnen Sie die jeweilige
+Auflösung erst, nachdem Sie Ihre Entscheidung gespeichert haben.
+
+Für die vollständige Reproduzierbarkeit des klassischen Modells enthält das
+öffentliche R-Projekt außerdem einen auf die Analysevariablen reduzierten
+Modelldatensatz. Personenbezogene Angaben und interne Dozierendenvermerke sind
+nicht enthalten.
 
 ```{r}
 #| label: referenz-freigabe
@@ -775,8 +889,8 @@ stilisierten Übung.
 
 if (!isTRUE(params$show_reference)) {
   cat(
-    "> Die Referenzkodierung ist in dieser Fassung ausgeblendet. ",
-    "Sie wird erst nach Abschluss der unabhängigen Handkodierung freigegeben."
+    "> Die vollständigen 60 Referenzbegründungen sind nicht Bestandteil ",
+    "der öffentlichen Selbstlernfassung."
   )
 } else {
   # Diese Datei wird bewusst erst in der Dozierendenfassung geöffnet.
@@ -809,9 +923,8 @@ if (!isTRUE(params$show_reference)) {
 }
 ```
 
-Die dozierendenseitige Fassung kann später mit
-`-P show_reference:true` gerendert werden. Ohne geprüfte Labels bleibt auch
-diese Ansicht leer.
+Die interne Dozierendenfassung kann zusätzlich die vollständige
+Referenztabelle anzeigen.
 
 ## Kernbotschaften
 
