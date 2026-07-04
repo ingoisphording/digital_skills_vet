@@ -24,8 +24,11 @@ Qualitätsberichte sind nicht Bestandteil des Repositorys.
 ## R-Code lokal ausführen
 
 1. Das Repository klonen oder über **Code → Download ZIP** herunterladen.
-2. R und RStudio installieren; Quarto ist in aktuellen RStudio-Versionen
-   enthalten.
+2. [R über CRAN](https://cran.r-project.org/) und die
+   [Open-Source-Version von RStudio Desktop](https://posit.co/download/rstudio-desktop/)
+   installieren. Quarto ist in aktuellen RStudio-Versionen enthalten; bei
+   Bedarf steht eine separate
+   [Quarto-Installationsanleitung](https://quarto.org/docs/get-started/) bereit.
 3. In RStudio `source/digital_skills_vet.Rproj` öffnen. Dadurch verwendet R
    automatisch das richtige Arbeitsverzeichnis.
 4. `source/setup.R` öffnen und einmal vollständig ausführen.

@@ -86,15 +86,26 @@ reproduzierbar berechnet.
 
 **Mit ausführbarem R-Code:** Laden oder klonen Sie das
 [GitHub-Repository](https://github.com/ingoisphording/digital_skills_vet),
-öffnen Sie in RStudio zuerst `source/digital_skills_vet.Rproj` und führen Sie
-anschließend [`source/setup.R`](source/setup.R) aus. Öffnen Sie danach
-`source/digital_skills_vet.qmd`. Nun können Sie einzelne Codeblöcke mit dem
-grünen Ausführungspfeil starten oder das gesamte Dokument mit **Render** neu
-erzeugen.
+verwenden Sie **Code → Download ZIP** und gehen Sie anschließend so vor:
 
-Für den zweiten Weg benötigen Sie R sowie RStudio mit Quarto. R-Vorkenntnisse
-werden nicht vorausgesetzt; der Code ist zum schrittweisen Nachvollziehen
-kommentiert.
+1. Installieren Sie [R über CRAN](https://cran.r-project.org/).
+2. Installieren Sie die kostenlose
+   [Open-Source-Version von RStudio Desktop](https://posit.co/download/rstudio-desktop/).
+   Quarto ist in aktuellen RStudio-Versionen bereits enthalten. Falls der
+   Befehl **Render** nicht verfügbar ist, folgen Sie zusätzlich der
+   [Quarto-Installationsanleitung](https://quarto.org/docs/get-started/).
+3. Entpacken Sie das heruntergeladene Repository.
+4. Öffnen Sie in RStudio die Projektdatei
+   [`source/digital_skills_vet.Rproj`](source/digital_skills_vet.Rproj).
+5. Öffnen Sie [`source/setup.R`](source/setup.R) und führen Sie die Datei
+   einmal vollständig aus. Das Skript installiert nur noch fehlende R-Pakete.
+6. Öffnen Sie danach
+   [`source/digital_skills_vet.qmd`](source/digital_skills_vet.qmd). Einzelne
+   Codeblöcke starten Sie mit dem grünen Ausführungspfeil; **Render** führt alle
+   Blöcke aus und erzeugt die gesamte HTML-Seite neu.
+
+R-Vorkenntnisse werden nicht vorausgesetzt. Der eingeblendete Code konzentriert
+sich auf analytisch relevante Schritte und ist zum Nachvollziehen kommentiert.
 
 :::
 
@@ -155,7 +166,7 @@ Analyseeinheit, Messkonzept und Referenzpunkt klären.
 In modernen Ausbildungsordnungen sind Fertigkeiten, Kenntnisse und Fähigkeiten in
 Berufsbildpositionen gebündelt. Innerhalb dieser Positionen stehen buchstabierte
 Lernziele wie `a)`, `b)` oder `c)`. Ein solcher Unterpunkt bildet in dieser
-Übung eine **Kompetenzzeile** \(l\). „Lernziel“ und „Kompetenzzeile“
+Übung eine **Kompetenzzeile**. „Lernziel“ und „Kompetenzzeile“
 bezeichnen im Folgenden dieselbe Analyseeinheit.
 
 ::: {.callout-note}
@@ -182,6 +193,7 @@ Die Daten enthalten fünf Ausbildungsberufe:
 
 ```{r}
 #| label: tab-datenumfang
+#| echo: false
 
 curriculum |>
   # Eine Tabellenzeile je Beruf erzeugen und dessen Kompetenzzeilen zählen.
@@ -194,46 +206,32 @@ curriculum |>
   )
 ```
 
-Die Anzahl umfasst auch fachrichtungs- und
-wahlqualifikationsspezifische Inhalte. Diese Alternativen werden im Datensatz
-markiert und dürfen nicht unbemerkt als gemeinsames Curriculum interpretiert
-werden.
+Einige Ausbildungsordnungen enthalten neben Kompetenzen, die für alle
+Auszubildenden gelten, zusätzliche Inhalte für bestimmte Fachrichtungen oder
+Wahlqualifikationen. Die Tabelle zählt zunächst alle im Dokument aufgeführten
+Kompetenzzeilen. Ihre Summe beschreibt daher nicht automatisch das
+Ausbildungsprogramm einer einzelnen Person: Diese absolviert nur die für sie
+geltenden Fachrichtungen oder Wahlqualifikationen. Im Datensatz zeigen
+`track_type` und `track_name`, ob eine Zeile allgemein oder nur für eine solche
+Variante gilt.
 
-## Die stilisierte Zielvariable
+## Zielvariable: Anteil digitaler Kompetenzzeilen
 
-Für Kompetenzzeile \(l\) in Ausbildungsberuf \(o\) definieren wir:
+Jede Kompetenzzeile erhält eine binäre Kodierung:
 
-\[
-D_{lo} =
-\begin{cases}
-1, & \text{wenn die Kompetenzzeile als digital klassifiziert wird,}\\
-0, & \text{sonst.}
-\end{cases}
-\]
+- `1`, wenn sie nach der Arbeitsdefinition eine digitale Kompetenz beschreibt;
+- `0`, wenn sie keine digitale Kompetenz beschreibt.
 
-Wenn alle Kompetenzzeilen dasselbe Gewicht erhalten, lautet der digitale
-Kompetenzanteil:
-
-\[
-p_o = \frac{\sum_l D_{lo}}{N_o}.
-\]
-
-Dabei bezeichnet \(N_o\) die Zahl der berücksichtigten Kompetenzzeilen eines
-Berufs. Welche gemeinsamen, fachrichtungsbezogenen oder optionalen Zeilen zu
-\(N_o\) gehören, muss vor der Aggregation festgelegt werden.
+Der digitale Kompetenzanteil eines Berufs ist dann die Zahl der als digital
+kodierten Zeilen geteilt durch die Gesamtzahl der einbezogenen Zeilen. Bevor
+dieser Anteil berechnet wird, muss festgelegt werden, ob nur gemeinsame Inhalte
+oder zusätzlich bestimmte Fachrichtungen und Wahlqualifikationen berücksichtigt
+werden. In dieser stilisierten Übung erhalten alle einbezogenen Zeilen dasselbe
+Gewicht.
 
 ::: {.callout-warning appearance="default" icon="true"}
-## Didaktische Vereinfachung
+## Validierung
 
-- Wir messen **curricular vorgesehene Kompetenzen**, nicht tatsächlich
-  erworbene Kompetenzen.
-- Wir zählen Kompetenzzeilen. Das ist kein Maß ihrer zeitlichen,
-  betrieblichen oder pädagogischen Bedeutung.
-- Alle einbezogenen Zeilen erhalten zunächst dasselbe Gewicht.
-- Die Abgrenzung „digital“ ist eine theoretische und inhaltliche Entscheidung,
-  keine rein technische Entscheidung.
-- Die Übung ist keine belastbare Evaluationsstudie und keine vollständige
-  Messung des digitalen Kompetenzgehalts eines Berufs.
 - Automatische Verfahren müssen gegen eine **unabhängige handkodierte
   Referenz** geprüft werden.
 - Plausibel klingende Modelloutputs oder LLM-Begründungen sind keine
@@ -256,10 +254,10 @@ feststehen, bevor ein Modell trainiert oder ein Prompt formuliert wird.
 Im Lehrvortrag haben wir zwei zugegebenermaßen plakative Ankerbeispiele gesehen:
 
 - „Teilaufgaben von IT-Systemen automatisieren“  
-  \(\rightarrow\) digitale Kompetenz
+  → digitale Kompetenz
 - „Bedarfe von Kunden und Kundinnen feststellen sowie Zielgruppen
   unterscheiden“  
-  \(\rightarrow\) keine digitale Kompetenz
+  → keine digitale Kompetenz
 
 Diese Beispiele verdeutlichen die Kategorie, jedoch wird es bei der tatsächlichen Kategorisierung häufig zu Grenzfällen kommen.
 
@@ -274,14 +272,6 @@ Diese Beispiele verdeutlichen die Kategorie, jedoch wird es bei der tatsächlich
 
 ## Vom Text zur Variable: vier Schritte
 
-```{mermaid}
-flowchart LR
-    A["1. Digitalisierung<br/>HTML sichern, Tabellen erschließen,<br/>Lernziele segmentieren"]
-    --> B["2. Konzeptualisierung<br/>Analyseeinheit, Definition und<br/>Zielvariable festlegen"]
-    B --> C["3. Extraktion<br/>Text → D = 0/1<br/>und Aggregation zu p"]
-    C --> D["4. Validierung<br/>unabhängige Handkodierung,<br/>Fehleranalyse, externe Evidenz"]
-```
-
 Diese Reihenfolge entspricht der Logik, die wir im Lehrvortrag gehört haben:
 
 1. **Digitalisierung:** Die amtlichen HTML-Anlagen werden als unveränderte
@@ -290,9 +280,11 @@ Diese Reihenfolge entspricht der Logik, die wir im Lehrvortrag gehört haben:
 2. **Konzeptualisierung:** Wir entscheiden, welche Textstelle eine Einheit
    bildet, was „digital“ bedeutet und welche Zielgröße gemessen werden soll.
 3. **Extraktion:** Der eigentliche Text-as-Data-Schritt überführt jedes
-   Lernziel in eine quantitative Kategorie \(D_{lo}\). Handkodierung,
+   Lernziel in die quantitative Kategorie „digital“ oder „nicht digital“.
+   Handkodierung,
    Supervised ML/NLP und LLM-Klassifikation sind alternative Verfahren für
-   diesen Schritt. Anschließend wird zu \(p_o\) aggregiert.
+   diesen Schritt. Anschließend wird für jeden Beruf der Anteil digitaler
+   Kompetenzzeilen berechnet.
 4. **Validierung:** Die Klassifikationen werden mit einem unabhängigen
    Referenzpunkt verglichen und inhaltlich auf Fehler untersucht.
 
@@ -306,6 +298,7 @@ Die verwendeten amtlichen Quellen sind:
 
 ```{r}
 #| label: tab-quellen
+#| echo: false
 
 sources |>
   # transmute() baut aus den Quelldaten genau die drei Ausgabespalten.
@@ -320,9 +313,15 @@ sources |>
   kable(
     format = "html",
     escape = FALSE,
-    caption = "Quellen der Ausbildungsrahmenpläne"
+    caption = "Amtliche Anlagen der Ausbildungsordnungen"
   )
 ```
+
+Untersucht werden die **Ausbildungsordnungen**. Die tabellarischen
+Kompetenzbeschreibungen stehen in deren amtlichen Anlagen, die im Rechtstext
+teilweise als „Ausbildungsrahmenplan“ bezeichnet werden. Dieser Originalbegriff
+kann deshalb in einzelnen Abschnittsnamen des Datensatzes auftauchen; er
+bezeichnet hier keine zusätzliche Datenquelle.
 
 Für die reproduzierbare Analyse wurden die HTML-Seiten am dokumentierten
 Abrufdatum unverändert gespeichert. Die Klassifikation arbeitet mit diesen
@@ -379,7 +378,14 @@ vergleich <- curriculum |>
     track_type,
     source_url
   )
+```
 
+```{r}
+#| label: tab-quellenvergleich
+#| echo: false
+
+# Die Formatierung als HTML-Tabelle ist für die inhaltliche Analyse nicht
+# relevant und bleibt deshalb in der Übungsansicht ausgeblendet.
 vergleich |>
   kable(
     col.names = c(
@@ -422,6 +428,7 @@ Tätigkeiten allein aufgrund Ihrer allgemeinen Kenntnis des Berufs.
 
 ```{r}
 #| label: aufgabe-handkodierung
+#| echo: false
 
 # Diese zehn Fälle werden später auch zur Prüfung des klassischen Modells
 # verwendet. Die Referenzlabels sind in der Eingabedatei nicht enthalten.
@@ -461,6 +468,7 @@ nur mit den übrigen 50 Fällen trainiert.
 
 ```{r}
 #| label: tab-kodierstichprobe
+#| echo: false
 
 manual_sample |>
   # Jede Kombination aus Beruf und Inhaltstyp wird gezählt.
@@ -526,14 +534,9 @@ if (isTRUE(params$self_study_solutions)) {
 Die klassische Pipeline bildet den dokumentierten Kontext jeder
 Kompetenzzeile als gemeinsamen Modelltext ab:
 
-\[
-\text{Beruf + Berufsbildposition + Lernziel}
-\rightarrow \text{Tokens}
-\rightarrow \text{TF-IDF}
-\rightarrow \text{logistische Regression}
-\rightarrow \Pr(D_{lo}=1)
-\rightarrow \widehat D_{lo}.
-\]
+**Beruf + Berufsbildposition + Lernziel → einzelne Wörter → TF-IDF-Merkmale →
+logistische Regression → geschätzte Wahrscheinlichkeit → Klassifikation als
+digital oder nicht digital**
 
 Das kommentierte Skript
 [`source/scripts/08_classic_nlp.R`](source/scripts/08_classic_nlp.R) setzt
@@ -694,6 +697,7 @@ Die fünf Fälle enthalten je eine Kompetenzzeile aus jedem Beruf:
 
 ```{r}
 #| label: browser-modellvergleich-faelle
+#| echo: false
 
 browser_sample <- read_csv(
   "data/derived/classroom_model_comparison_sample.csv",
@@ -834,9 +838,9 @@ if (!isTRUE(params$self_study_solutions) &&
 
 ## Ausblick: drei Verfahren — dieselbe Zielvariable
 
-Alle drei Verfahren sollen dieselbe Zuordnung
-\(\text{Lernziel} \rightarrow \text{digital / nicht digital}\) erzeugen. Sie
-unterscheiden sich im Aufwand, in der Transparenz und in der Skalierbarkeit.
+Alle drei Verfahren sollen Lernziele derselben Kategorie „digital“ oder „nicht
+digital“ zuordnen. Sie unterscheiden sich im Aufwand, in der Transparenz und
+in der Skalierbarkeit.
 
 | Verfahren | Typisches Vorgehen | Vorteil | Nachteil |
 |---|---|---|---|
@@ -932,9 +936,9 @@ Referenztabelle anzeigen.
    curricular festgelegte Kompetenzanforderungen zwischen Berufen
    vergleichbar.
 2. **Der Weg vom Text zur Variable ist der eigentliche Forschungsbeitrag.**
-   Der Datensatz und \(D_{lo}\) werden nicht einfach beobachtet, sondern durch
-   Entscheidungen über Digitalisierung, Analyseeinheit, Codebuch und
-   Aggregation konstruiert.
+   Der Datensatz und die Klassifikation als digital oder nicht digital werden
+   nicht einfach beobachtet, sondern durch Entscheidungen über Digitalisierung,
+   Analyseeinheit, Codebuch und Aggregation konstruiert.
 3. **Methodenwahl ist eine bewusste Entscheidung.** Datenqualität,
    Skalierbarkeit, Transparenz und Validierungsaufwand entscheiden zwischen
    Handkodierung, Supervised ML/NLP und LLM-Klassifikation — nicht die bloße
