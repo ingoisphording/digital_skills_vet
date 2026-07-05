@@ -1,12 +1,12 @@
 ---
 title: "Text-as-data: Das Beispiel von Ausbildungsordnungen"
-subtitle: "Übung: Vom Text zur Variable am Beispiel digitaler Kompetenzen"
+subtitle: "Kompakte Übung zu digitalen Kompetenzen"
 lang: de
 format:
   html:
     toc: true
     toc-title: "Inhalt"
-    number-sections: true
+    number-sections: false
     embed-resources: true
     code-fold: false
     code-tools: false
@@ -23,289 +23,88 @@ params:
 #| label: setup
 #| include: false
 
-# Pakete stellen Funktionen zum Einlesen, Bearbeiten und Anzeigen bereit.
-library(readr)  # read_csv()
-library(dplyr)  # select(), filter(), count(), mutate() und die Pipe
-library(knitr)  # kable() für HTML-Tabellen
+library(readr)  # CSV-Dateien einlesen
+library(dplyr)  # Daten auswählen, verbinden und zusammenfassen
+library(knitr)  # Tabellen für die HTML-Seite formatieren
 
-# read_csv() liest eine CSV-Datei als Tabelle; jede Datei bleibt unverändert.
-curriculum <- read_csv(
-  "data/derived/curriculum_units.csv",
-  show_col_types = FALSE,
-  locale = locale(encoding = "UTF-8")
+read_utf8 <- function(path) {
+  read_csv(
+    path,
+    show_col_types = FALSE,
+    locale = locale(encoding = "UTF-8")
+  )
+}
+
+sources <- read_utf8("config/source_urls.csv")
+curriculum <- read_utf8("data/derived/curriculum_units.csv")
+exercise_sample <- read_utf8(
+  "data/self_study/student_coding_template.csv"
 )
-
-sources <- read_csv(
-  "config/source_urls.csv",
-  show_col_types = FALSE,
-  locale = locale(encoding = "UTF-8")
+coding_solution <- read_utf8(
+  "data/self_study/coding_solution.csv"
 )
-
-manual_sample <- read_csv(
-  "data/derived/manual_coding_sample.csv",
-  show_col_types = FALSE,
-  locale = locale(encoding = "UTF-8")
+browser_sample <- read_utf8(
+  "data/derived/classroom_model_comparison_sample.csv"
 )
-
-# Diese zehn Fälle bilden zugleich die studentische Kodieraufgabe und die
-# zurückgehaltene Testmenge des klassischen Modells.
-exercise_sample <- read_csv(
-  "data/self_study/student_coding_template.csv",
-  show_col_types = FALSE,
-  locale = locale(encoding = "UTF-8")
+model_comparison_solution <- read_utf8(
+  "data/self_study/model_comparison_solution.csv"
 )
-
-coding_solution <- read_csv(
-  "data/self_study/coding_solution.csv",
-  show_col_types = FALSE,
-  locale = locale(encoding = "UTF-8")
+classic_metrics <- read_utf8(
+  "output/tables/classic_nlp_metrics.csv"
+)
+all_predictions_summary <- read_utf8(
+  "output/tables/classic_nlp_all_predictions_summary.csv"
 )
 ```
 
-## Lernziele
+Diese Übung demonstriert, wie aus amtlichen Ausbildungstexten eine
+quantitative Variable entsteht. Sie bearbeiten eine kleine Handkodierung,
+vollziehen ein klassisches Textklassifikationsmodell nach und vergleichen
+dessen Ergebnisse mit frei zugänglichen Chatmodellen. Planen Sie ungefähr
+**60 bis 75 Minuten** ein.
 
-In dieser Übung lernen Sie
+::: {.callout-note collapse="true"}
+**Optional: R-Code selbst ausführen**
 
-1. zu begründen, warum Ausbildungsordnungen eine wertvolle Textdatenquelle für
-   die Berufsbildungsforschung sind,
-2. den Weg vom Ausbildungstext zur messbaren Forschungsvariable
-   nachzuvollziehen: **Digitalisierung, Konzeptualisierung, Extraktion und
-   Validierung**,
-3. verschiedene Klassifikationsverfahren — **Handkodierung, Supervised ML/NLP
-   und LLM-Klassifikation** — zu unterscheiden und ihre Vor- und Nachteile
-   einzuordnen,
-4. Kompetenzbeschreibungen anhand eines dokumentierten Codebuchs zu kodieren.
-
-
-::: {.callout-note}
-## Zwei Bearbeitungswege
-
-**Ohne lokale Installation:** Lesen Sie die Übung im Browser und bearbeiten Sie
-die bereitgestellten CSV-Vorlagen. Die angezeigten R-Ergebnisse sind bereits
-reproduzierbar berechnet.
-
-**Mit ausführbarem R-Code:** Laden oder klonen Sie das
-[GitHub-Repository](https://github.com/ingoisphording/digital_skills_vet),
-verwenden Sie **Code → Download ZIP** und gehen Sie anschließend so vor:
+Die fertige Übung kann ohne Installation im Browser gelesen werden. Wenn Sie
+den R-Code selbst ausführen möchten:
 
 1. Installieren Sie [R über CRAN](https://cran.r-project.org/).
-2. Installieren Sie die kostenlose
-   [Open-Source-Version von RStudio Desktop](https://posit.co/download/rstudio-desktop/).
-   Quarto ist in aktuellen RStudio-Versionen bereits enthalten. Falls der
-   Befehl **Render** nicht verfügbar ist, folgen Sie zusätzlich der
+2. Installieren Sie
+   [RStudio Desktop](https://posit.co/download/rstudio-desktop/). Quarto ist in
+   aktuellen RStudio-Versionen enthalten; andernfalls hilft die
    [Quarto-Installationsanleitung](https://quarto.org/docs/get-started/).
-3. Entpacken Sie das heruntergeladene Repository.
-4. Öffnen Sie in RStudio die Projektdatei
-   [`source/digital_skills_vet.Rproj`](source/digital_skills_vet.Rproj).
-5. Öffnen Sie [`source/setup.R`](source/setup.R) und führen Sie die Datei
-   einmal vollständig aus. Das Skript installiert nur noch fehlende R-Pakete.
-6. Öffnen Sie danach
-   [`source/digital_skills_vet.qmd`](source/digital_skills_vet.qmd). Einzelne
-   Codeblöcke starten Sie mit dem grünen Ausführungspfeil; **Render** führt alle
-   Blöcke aus und erzeugt die gesamte HTML-Seite neu.
-
-R-Vorkenntnisse werden nicht vorausgesetzt. Der eingeblendete Code konzentriert
-sich auf analytisch relevante Schritte und ist zum Nachvollziehen kommentiert.
-
+3. Laden Sie das
+   [GitHub-Repository](https://github.com/ingoisphording/digital_skills_vet)
+   über **Code → Download ZIP** herunter und entpacken Sie es.
+4. Öffnen Sie
+   [`source/digital_skills_vet.Rproj`](source/digital_skills_vet.Rproj) und
+   führen Sie [`source/setup.R`](source/setup.R) einmal vollständig aus.
+5. Öffnen Sie anschließend
+   [`source/digital_skills_vet.qmd`](source/digital_skills_vet.qmd). Sie können
+   einzelne Codeblöcke ausführen oder mit **Render** die gesamte Seite neu
+   erzeugen.
 :::
 
-::: {.callout-tip}
-## Arbeitsumfang und Ergebnis
+## 1. Ausbildungsordnungen als Ressource
 
-Planen Sie etwa **90 Minuten** ein. Am Ende verfügen Sie über
+Ausbildungsordnungen sind standardisierte, rechtlich bindende Texte. Sie
+beschreiben unter anderem die Fertigkeiten, Kenntnisse und Fähigkeiten, die
+in einem Ausbildungsberuf vermittelt werden sollen. Ihre einheitliche Struktur
+macht Kompetenzanforderungen zwischen Berufen vergleichbar.
 
-1. eine ausgefüllte Kodierdatei mit zehn Kompetenzzeilen,
-2. je eine Ergebnisdatei für zwei frei zugängliche Chatmodelle und
-3. kurze schriftliche Antworten auf die Reflexions- und Vergleichsfragen.
-
-Die Auflösungen stehen jeweils unmittelbar nach der betreffenden Aufgabe.
-Öffnen Sie sie erst, nachdem Sie Ihre eigene Entscheidung dokumentiert haben.
-:::
-
-## Ausbildungsordnungen als Forschungsressource
-
-Ausbildungsordnungen sind standardisierte, rechtlich bindende Texte. Sie legen
-unter anderem Berufsbild, Ausbildungsdauer, zu vermittelnde Fertigkeiten,
-Kenntnisse und Fähigkeiten sowie Prüfungsanforderungen fest. Dadurch machen
-sie Kompetenzanforderungen zwischen Berufen und — bei mehreren Fassungen —
-über die Zeit vergleichbar.
-
-Wir betrachten heute fünf Ausbildungsordnungen: 
-
-1. Kaufmann/Kauffrau für Büromanagement
-2. Elektroniker/-in 
-3. Fachinformatiker/-in
-4. Friseur/-in
-5. Mechatroniker/-in 
-
-Wir vergleichen diese Ausbildungsordnungen in ihrer jeweils aktuell gültigen Fassung, aber keine Neuordnungen desselben Berufes über
-die Zeit. Die im Lehrvortrag betonte Längsschnittdimension wäre ein
-weiterführendes Forschungsdesign. 
-
-
-
-
-
-## Forschungsfrage
-
-> Wie hoch ist der Anteil der in den Ausbildungsordnungen beschriebenen Kompetenzen, die als "digital"
-> klassifiziert werden? Wie stark hängt das Ergebnis von der
-> gewählten Klassifikationsmethode ab?
-
-Wir vergleichen im weiteren Verlauf drei Vorgehensweisen:
-
-1. Handkodierung,
-2. Supervised ML/NLP mit einem klassischen Klassifikationsmodell und
-3. LLM-gestützte Klassifikation.
-
-Bevor wir mit der eigentlichen Extraktion beginnen, müssen wir 
-Analyseeinheit, Messkonzept und Referenzpunkt klären.
-
-## Was ist unsere Analyseeinheit?
-
-In modernen Ausbildungsordnungen sind Fertigkeiten, Kenntnisse und Fähigkeiten in
-Berufsbildpositionen gebündelt. Innerhalb dieser Positionen stehen buchstabierte
-Lernziele wie `a)`, `b)` oder `c)`. Ein solcher Unterpunkt bildet in dieser
-Übung eine **Kompetenzzeile**. „Lernziel“ und „Kompetenzzeile“
-bezeichnen im Folgenden dieselbe Analyseeinheit.
-
-::: {.callout-note}
-## Kurze R-Lesehilfe
-
-Für die Übung werden keine R-Vorkenntnisse vorausgesetzt. Die wichtigsten
-Schreibweisen sind:
-
-- `<-` speichert ein Ergebnis unter einem Namen;
-- `|>` reicht das Ergebnis an den nächsten Arbeitsschritt weiter;
-- `group_by()` bildet Gruppen, beispielsweise Ausbildungsberufe;
-- `select()` behält vorhandene Spalten, `transmute()` erzeugt die gewünschten
-  Ausgabespalten;
-- `filter()` behält passende Zeilen;
-- `count()` zählt Zeilen und `arrange()` sortiert sie;
-- `kable()` formatiert einen Datensatz als Tabelle.
-
-Lesen Sie eine Pipe von oben nach unten: Ausgangsdaten → Bearbeitungsschritte
-→ Ergebnis. Präfixe wie `dplyr::` in den Skripten zeigen explizit, aus welchem
-Paket eine Funktion stammt.
-:::
-
-Die Daten enthalten fünf Ausbildungsberufe:
-
-```{r}
-#| label: tab-datenumfang
-#| echo: false
-
-curriculum |>
-  # Eine Tabellenzeile je Beruf erzeugen und dessen Kompetenzzeilen zählen.
-  count(occupation, name = "Kompetenzzeilen") |>
-  # Alphabetisch sortieren, damit die Tabelle leichter lesbar ist.
-  arrange(occupation) |>
-  kable(
-    col.names = c("Ausbildungsberuf", "Anzahl"),
-    caption = "Extrahierte Kompetenzzeilen nach Ausbildungsberuf"
-  )
-```
-
-Einige Ausbildungsordnungen enthalten neben Kompetenzen, die für alle
-Auszubildenden gelten, zusätzliche Inhalte für bestimmte Fachrichtungen oder
-Wahlqualifikationen. Die Tabelle zählt zunächst alle im Dokument aufgeführten
-Kompetenzzeilen. Ihre Summe beschreibt daher nicht automatisch das
-Ausbildungsprogramm einer einzelnen Person: Diese absolviert nur die für sie
-geltenden Fachrichtungen oder Wahlqualifikationen. Im Datensatz zeigen
-`track_type` und `track_name`, ob eine Zeile allgemein oder nur für eine solche
-Variante gilt.
-
-## Zielvariable: Anteil digitaler Kompetenzzeilen
-
-Jede Kompetenzzeile erhält eine binäre Kodierung:
-
-- `1`, wenn sie nach der Arbeitsdefinition eine digitale Kompetenz beschreibt;
-- `0`, wenn sie keine digitale Kompetenz beschreibt.
-
-Der digitale Kompetenzanteil eines Berufs ist dann die Zahl der als digital
-kodierten Zeilen geteilt durch die Gesamtzahl der einbezogenen Zeilen. Bevor
-dieser Anteil berechnet wird, muss festgelegt werden, ob nur gemeinsame Inhalte
-oder zusätzlich bestimmte Fachrichtungen und Wahlqualifikationen berücksichtigt
-werden. In dieser stilisierten Übung erhalten alle einbezogenen Zeilen dasselbe
-Gewicht.
-
-::: {.callout-warning appearance="default" icon="true"}
-## Validierung
-
-- Automatische Verfahren müssen gegen eine **unabhängige handkodierte
-  Referenz** geprüft werden.
-- Plausibel klingende Modelloutputs oder LLM-Begründungen sind keine
-  Validierung.
-:::
-
-## Arbeitsdefinition „digitale Kompetenz“
-
-> Eine Kompetenzzeile wird als digital klassifiziert, wenn ihre Erfüllung
-> ausdrücklich die Nutzung, Konfiguration, Entwicklung, Steuerung oder Analyse
-> digitaler Systeme, Software, Daten oder automatisierter digitaler Prozesse
-> erfordert.
-
-Nicht ausreichend ist die bloße Nutzung eines technischen Geräts, sofern kein
-digitaler Bezug erkennbar ist.
-
-Diese Definition ist eine diskutierbare Arbeitsdefinition. Sie muss
-feststehen, bevor ein Modell trainiert oder ein Prompt formuliert wird.
-
-Im Lehrvortrag haben wir zwei zugegebenermaßen plakative Ankerbeispiele gesehen:
-
-- „Teilaufgaben von IT-Systemen automatisieren“  
-  → digitale Kompetenz
-- „Bedarfe von Kunden und Kundinnen feststellen sowie Zielgruppen
-  unterscheiden“  
-  → keine digitale Kompetenz
-
-Diese Beispiele verdeutlichen die Kategorie, jedoch wird es bei der tatsächlichen Kategorisierung häufig zu Grenzfällen kommen.
-
-| Möglicher Grenzfall | Zu klärende Frage |
-|---|---|
-| Daten erfassen und auswerten | Werden ausdrücklich digitale Daten oder Systeme benötigt? |
-| CNC-Anlagen programmieren | Ist Programmierung hinreichend explizit? |
-| Anlagen überwachen | Erfolgt die Überwachung digital oder rein mechanisch? |
-| Kundendaten verarbeiten | Ist „Daten“ allein ein ausreichender digitaler Bezug? |
-| Kundinnen und Kunden beraten | Geht es ausdrücklich um digitale Systeme oder Produkte? |
-| Kassenabrechnung durchführen | Wird ein digitales Kassensystem genannt oder nur die Tätigkeit? |
-
-## Vom Text zur Variable: vier Schritte
-
-Diese Reihenfolge entspricht der Logik, die wir im Lehrvortrag gehört haben:
-
-1. **Digitalisierung:** Die amtlichen HTML-Anlagen werden als unveränderte
-   Snapshots gesichert. Scraping und Segmentierung machen die Lernziele
-   maschinenlesbar (der Schritt ist hier bereits geschehen).
-2. **Konzeptualisierung:** Wir entscheiden, welche Textstelle eine Einheit
-   bildet, was „digital“ bedeutet und welche Zielgröße gemessen werden soll.
-3. **Extraktion:** Der eigentliche Text-as-Data-Schritt überführt jedes
-   Lernziel in die quantitative Kategorie „digital“ oder „nicht digital“.
-   Handkodierung,
-   Supervised ML/NLP und LLM-Klassifikation sind alternative Verfahren für
-   diesen Schritt. Anschließend wird für jeden Beruf der Anteil digitaler
-   Kompetenzzeilen berechnet.
-4. **Validierung:** Die Klassifikationen werden mit einem unabhängigen
-   Referenzpunkt verglichen und inhaltlich auf Fehler untersucht.
-
-Die technische Tabellenextraktion in Schritt 1 ist also nicht dasselbe wie die
-inhaltliche Extraktion der Forschungsvariable in Schritt 3. Fehler bei der
-Digitalisierung lassen sich nicht durch ein besseres Klassifikationsmodell
-beheben. Ebenso kann ein leistungsfähiges Modell eine unklare
-Konzeptualisierung nicht ersetzen. Für die hier genutzten aktuellen Fassungen ist dies aber auch kein Problem -- sie liegen bereits digital vor.
-
-Die verwendeten amtlichen Quellen sind:
+Wir verwenden die jeweils aktuelle digitale Fassung von fünf
+Ausbildungsordnungen:
 
 ```{r}
 #| label: tab-quellen
 #| echo: false
 
 sources |>
-  # transmute() baut aus den Quelldaten genau die drei Ausgabespalten.
   transmute(
     Ausbildungsberuf = occupation,
     Fassung = order_year,
-    `Amtliche HTML-Anlage` = sprintf(
+    `Amtliche Fassung` = sprintf(
       '<a href="%s" target="_blank">Anlage öffnen</a>',
       extraction_url
     )
@@ -317,632 +116,293 @@ sources |>
   )
 ```
 
-Untersucht werden die **Ausbildungsordnungen**. Die tabellarischen
-Kompetenzbeschreibungen stehen in deren amtlichen Anlagen, die im Rechtstext
-teilweise als „Ausbildungsrahmenplan“ bezeichnet werden. Dieser Originalbegriff
-kann deshalb in einzelnen Abschnittsnamen des Datensatzes auftauchen; er
-bezeichnet hier keine zusätzliche Datenquelle.
+Die Kompetenzbeschreibungen stehen in den Anlagen der Ausbildungsordnungen,
+die im Rechtstext teilweise „Ausbildungsrahmenplan“ heißen. Der Begriff kann
+deshalb in einzelnen Abschnittsnamen des Datensatzes auftauchen. Untersucht
+werden dennoch die Ausbildungsordnungen, nicht eine zusätzliche Datenquelle.
 
-Für die reproduzierbare Analyse wurden die HTML-Seiten am dokumentierten
-Abrufdatum unverändert gespeichert. Die Klassifikation arbeitet mit diesen
-Snapshots, um nicht von Veränderungen der Live-Seite betroffen zu sein. 
+## 2. Extraktion von Kompetenzen
 
-## Aufgabe 1: Quelle und Datensatz vergleichen
+Zunächst müssen wir aus den digital vorliegenden Ausbildungsordnungen die
+jeweiligen Kompetenzzeilen extrahieren. Dazu dienen das kommentierte
+R-Skript zum
+[Herunterladen der HTML-Seiten](source/scripts/01_download_html.R) und das
+R-Skript zur
+[Extraktion der Kompetenzzeilen](source/scripts/02_extract_curriculum_units.R).
 
-Die angezeigte Vergleichsstichprobe verwendet den Beruf
-Fachinformatiker/Fachinformatikerin. Wenn Sie die Übung mit R ausführen,
-können Sie stattdessen einen anderen Ausbildungsberuf wählen und dessen genaue
-Bezeichnung im Code unter `ausgewaehlter_beruf` eintragen.
+Die Skripte
 
-1. Öffnen Sie die amtliche HTML-Anlage aus der Quellentabelle.
-2. Vergleichen Sie die drei angezeigten Kompetenzzeilen mit dieser Quelle.
-3. Suchen Sie die jeweilige Berufsbildposition und den Buchstaben in der
-   HTML-Anlage.
-4. Prüfen Sie:
+- speichern einen datierten Snapshot jeder amtlichen HTML-Anlage,
+- erkennen Berufsbildpositionen und ihre buchstabierten Unterpunkte,
+- verbinden gegebenenfalls einen gemeinsamen Einleitungssatz mit dem
+  jeweiligen Unterpunkt und
+- speichern jede Kompetenzzeile mit Beruf, Abschnitt, Berufsbildposition,
+  Fachrichtung beziehungsweise Wahlqualifikation und Quellenlink.
 
-   - Stimmt `original_item_text` mit dem amtlichen Text überein?
-   - Wurde ein Einleitungssatz in `competency_stem` gespeichert?
-   - Gehört die Zeile zu gemeinsamen Inhalten, einer Fachrichtung oder einer
-     Wahlqualifikation?
-   - Welche Information ging durch die Segmentierung verloren?
-
-Der folgende Code erzeugt eine reproduzierbare Vergleichsstichprobe:
+Der resultierende Datensatz enthält insgesamt 895 Kompetenzzeilen. Je nach
+Beruf sind es zwischen 140 und 239:
 
 ```{r}
-#| label: aufgabe-quellenvergleich
+#| label: tab-datenumfang
+#| echo: false
 
-set.seed(20260702)
-
-# Der feste Seed erzeugt bei jedem Lauf dieselbe Zufallsstichprobe.
-# Ersetzen Sie den Text durch die genaue Bezeichnung des gewählten Berufs.
-ausgewaehlter_beruf <- "Fachinformatiker/Fachinformatikerin"
-
-# Eine verständliche Fehlermeldung ausgeben, falls die Bezeichnung nicht exakt
-# mit einem Eintrag im Datensatz übereinstimmt.
-if (!ausgewaehlter_beruf %in% curriculum$occupation) {
-  stop("Der eingetragene Ausbildungsberuf wurde im Datensatz nicht gefunden.")
-}
-
-vergleich <- curriculum |>
-  # Zunächst nur die Zeilen des ausgewählten Berufs behalten.
-  filter(occupation == ausgewaehlter_beruf) |>
-  # Aus diesem Beruf drei Kompetenzzeilen zufällig auswählen.
-  slice_sample(n = 3) |>
-  # Nur die für den Quellenvergleich benötigten Spalten behalten.
-  select(
-    occupation,
-    unit_id,
-    unit_name,
-    item_letter,
-    original_item_text,
-    track_type,
-    source_url
+curriculum |>
+  count(occupation, name = "Kompetenzzeilen") |>
+  arrange(occupation) |>
+  kable(
+    col.names = c("Ausbildungsberuf", "Anzahl"),
+    caption = "Extrahierte Kompetenzzeilen nach Ausbildungsberuf"
   )
 ```
 
+Einige Ordnungen enthalten neben gemeinsamen Inhalten zusätzliche Zeilen für
+bestimmte Fachrichtungen oder Wahlqualifikationen. Eine einzelne Person
+absolviert nicht alle diese Alternativen. Die Variablen `track_type` und
+`track_name` halten deshalb fest, für wen eine Zeile gilt.
+
+Fünf Beispielzeilen, die später erneut verwendet werden:
+
 ```{r}
-#| label: tab-quellenvergleich
+#| label: tab-beispielzeilen
 #| echo: false
 
-# Die Formatierung als HTML-Tabelle ist für die inhaltliche Analyse nicht
-# relevant und bleibt deshalb in der Übungsansicht ausgeblendet.
-vergleich |>
+browser_sample |>
+  select(case_number, occupation, unit_name, learning_goal_text) |>
   kable(
     col.names = c(
-      "Beruf", "ID", "Berufsbildposition", "Buchstabe",
-      "Original-Unterpunkt", "Inhaltstyp", "Quelle"
+      "Fall", "Beruf", "Berufsbildposition", "Kompetenzzeile"
     ),
-    caption = paste("Drei Vergleichszeilen:", ausgewaehlter_beruf)
+    caption = "Beispiele aus dem extrahierten Datensatz"
   )
 ```
 
-## Codebuch statt Bauchgefühl
+## 3. Fragestellung und Konzeptualisierung
 
-Die Handkodierung folgt einem einheitlichen Codebuch:
+> Wie hoch ist der Anteil der Kompetenzzeilen, die als digital klassifiziert
+> werden? Wie stark hängt das Ergebnis vom Klassifikationsverfahren ab?
 
-1. Eine klare Definition und Entscheidungsregeln werden in einem Codebuch
-   festgehalten.
-2. Lernziel, Berufsbildposition und Ausbildungsberuf werden gemeinsam
-   betrachtet.
-3. Für jede Kompetenzzeile werden Label, Konfidenz und eine kurze Begründung
-   dokumentiert.
+Unsere Arbeitsdefinition lautet:
 
-Verwenden Sie für die folgenden Aufgaben
-[das Codebuch](downloads/codebook_digital_competence.md).
+> Eine Kompetenzzeile ist digital, wenn ihre Erfüllung ausdrücklich die
+> Nutzung, Konfiguration, Entwicklung, Steuerung oder Analyse digitaler
+> Systeme, Software, Daten oder automatisierter digitaler Prozesse erfordert.
 
-## Aufgabe 2: Zehn Kompetenzzeilen handkodieren
+Jede Zeile erhält `1` für digital oder `0` für nicht digital. Der digitale
+Anteil eines Berufs ist die Zahl digital kodierter Zeilen geteilt durch die
+Zahl aller einbezogenen Zeilen. Welche Fachrichtungen und
+Wahlqualifikationen einbezogen werden, muss dabei ausdrücklich festgelegt
+werden.
 
-Kodieren Sie die folgenden zehn zufällig gezogenen Kompetenzzeilen.
+Zwei einfache Ankerbeispiele:
 
-Verwenden Sie:
+- „Teilaufgaben von IT-Systemen automatisieren“ → digital
+- „Bedarfe von Kunden und Kundinnen feststellen“ → nicht digital
 
-- `1`: digital,
-- `0`: nicht digital.
+Für Grenzfälle verwenden wir ein dokumentiertes
+[Codebuch](downloads/codebook_digital_competence.md), nicht nur unser
+Bauchgefühl.
 
-Notieren Sie außerdem eine Konfidenz zwischen `0` und `1` sowie eine kurze
-Begründung. Bei Unsicherheit vergeben Sie ein vorläufiges binäres Label,
-wählen eine niedrige Konfidenz und dokumentieren den Zweifelsfall.
-Entscheiden Sie anhand des Lernziels und seines dokumentierten Kontexts aus
-Ausbildungsberuf und Berufsbildposition. Unterstellen Sie darüber hinaus keine
-Tätigkeiten allein aufgrund Ihrer allgemeinen Kenntnis des Berufs.
+::: {.callout-warning}
+- Automatische Verfahren müssen gegen eine **unabhängige handkodierte
+  Referenz** geprüft werden.
+- Plausibel klingende Modelloutputs oder LLM-Begründungen sind keine
+  Validierung.
+:::
+
+## 4. Übung: Handkodierung der Testdaten
+
+Kodieren Sie die folgenden zehn zurückgehaltenen Fälle. Diese Fälle werden
+später auch zur Prüfung des klassischen Modells verwendet.
 
 ```{r}
-#| label: aufgabe-handkodierung
+#| label: tab-handkodierung
 #| echo: false
 
-# Diese zehn Fälle werden später auch zur Prüfung des klassischen Modells
-# verwendet. Die Referenzlabels sind in der Eingabedatei nicht enthalten.
-kodieraufgabe <- exercise_sample |>
-  # transmute() benennt Spalten um und zeigt kompakte Eingabefelder.
+exercise_sample |>
   transmute(
-    Nr. = row_number(),
+    ID = unit_id,
     Beruf = occupation,
     Berufsbildposition = unit_name,
-    Kompetenzzeile = learning_goal_text,
-    Kodierung = "",
-    Konfidenz = "",
-    Begründung = ""
-  )
-
-kodieraufgabe |>
-  kable(caption = "Zehn zurückgehaltene Fälle für die Handkodierung")
+    Kompetenzzeile = learning_goal_text
+  ) |>
+  kable(caption = "Zehn Testfälle für die Handkodierung")
 ```
 
-Tragen Sie Ihre Entscheidungen in die
-[Kodiermaske mit zehn Fällen](downloads/student_coding_template.csv) ein.
-Reflektieren und notieren Sie anschließend:
-
-1. Welche Wörter und Kontextinformationen waren für Ihre Entscheidung
-   ausschlaggebend?
-2. Welche Fälle waren schwer zu entscheiden?
-3. Welche Regel ist für diese Grenzfälle maßgeblich?
-4. Welche Regel müsste dokumentiert werden, bevor dieselben Texte automatisch
-   klassifiziert werden?
-
-## Grundlage des klassischen Modells
-
-Die dozierendenseitige Modellierungsstichprobe enthält zwölf zufällige
-Kompetenzzeilen je Beruf, insgesamt also 60 Einheiten. Die zehn von Ihnen
-kodierten Fälle werden vollständig zurückgehalten. Das klassische Modell wird
-nur mit den übrigen 50 Fällen trainiert.
-
-```{r}
-#| label: tab-kodierstichprobe
-#| echo: false
-
-manual_sample |>
-  # Jede Kombination aus Beruf und Inhaltstyp wird gezählt.
-  count(occupation, track_type, name = "Zeilen") |>
-  arrange(occupation, track_type) |>
-  kable(
-    col.names = c("Ausbildungsberuf", "Inhaltstyp", "Anzahl"),
-    caption = "Zusammensetzung der formalen Kodierstichprobe"
-  )
-```
-
-Ihre Kodiermaske enthält folgende Eingabefelder:
-
-- `coder_id`: pseudonymisierte Kennung,
-- `occupation`, `section` und `unit_name`: Kontext zur Interpretation des
-  Lernziels,
-- `student_label`: `0` oder `1`,
-- `student_confidence`: Zahl zwischen `0` und `1`,
-- `student_rationale`: kurze Begründung.
-
-Speichern Sie Ihre ausgefüllte Kopie unter einem neuen Dateinamen, damit die
-leere Vorlage erhalten bleibt.
-
-::: {.callout-note}
-## Referenzkodierung
-
-Die dozierendenseitige Referenzkodierung wird getrennt geführt und in der
-studentischen Standardfassung nicht angezeigt. Eine Referenzkodierung ist
-nicht automatisch die „Wahrheit“. Sie ist eine dokumentierte
-Expertenentscheidung, deren Regeln und Unsicherheiten nachvollziehbar sein
-müssen.
-::: 
+1. Laden Sie die
+   [Kodiermaske](downloads/student_coding_template.csv) herunter.
+2. Vergeben Sie für jede Zeile `1` oder `0`.
+3. Ergänzen Sie eine Konfidenz zwischen `0` und `1` sowie eine kurze
+   Begründung.
+4. Verwenden Sie Lernziel, Berufsbildposition und Beruf als Kontext, aber
+   unterstellen Sie keine nicht genannten Tätigkeiten.
 
 ::: {.callout-tip collapse="true"}
-## Auflösung der zehn Handkodierungsfälle
-
-Öffnen Sie diesen Abschnitt erst nach Abschluss Ihrer eigenen Kodierung.
-Vergleichen Sie nicht nur die Labels, sondern insbesondere die dokumentierten
-Begründungen mit Ihren Entscheidungen.
+**Auflösung erst nach der eigenen Kodierung öffnen**
 
 ```{r}
 #| label: aufloesung-handkodierung
 #| echo: false
 
-if (isTRUE(params$self_study_solutions)) {
-  coding_solution |>
-    transmute(
-      Beruf = occupation,
-      Berufsbildposition = unit_name,
-      Kompetenzzeile = learning_goal_text,
-      Referenz = reference_label,
-      Begründung = reference_rationale
-    ) |>
-    kable(caption = "Dokumentierte Referenz für die zehn Übungsfälle")
-} else {
-  cat("> Die Auflösung ist in dieser Fassung deaktiviert.")
-}
-```
-:::
-
-## Klassisches ML/NLP
-
-Die klassische Pipeline bildet den dokumentierten Kontext jeder
-Kompetenzzeile als gemeinsamen Modelltext ab:
-
-**Beruf + Berufsbildposition + Lernziel → einzelne Wörter → TF-IDF-Merkmale →
-logistische Regression → geschätzte Wahrscheinlichkeit → Klassifikation als
-digital oder nicht digital**
-
-Das kommentierte Skript
-[`source/scripts/08_classic_nlp.R`](source/scripts/08_classic_nlp.R) setzt
-diese Schritte ohne zusätzliche NLP-Bibliothek um. Im lokalen R-Projekt können
-Sie es mit `source("scripts/08_classic_nlp.R")` vollständig neu ausführen.
-
-1. Der Text wird kleingeschrieben und in Wörter zerlegt.
-2. Häufige deutsche Funktionswörter werden entfernt.
-3. Aus den **Trainingsdaten** werden TF-IDF-Merkmale gebildet. Wörter aus der
-   Testmenge beeinflussen weder Vokabular noch IDF-Gewichte.
-4. Eine logistische Regression mit Ridge-Regularisierung schätzt für jede
-   Zeile eine Wahrscheinlichkeit.
-5. Ab einer festgelegten Schwelle von `0.5` lautet das Modelllabel `1`.
-
-::: {.callout-warning}
-## Nur eine didaktische Illustration
-
-Die Referenzstichprobe umfasst lediglich 60 Zeilen und nur 20 positive Fälle.
-Das reicht nicht für eine belastbare Schätzung der Modellgüte. Insbesondere
-können einzelne Wörter, Berufsbezeichnungen oder die konkrete Stichprobe das
-Ergebnis stark bestimmen. Die Kennzahlen sind Resultate dieses kleinen
-Beispiels und dürfen nicht auf andere Ausbildungsordnungen übertragen werden.
-:::
-
-### Trainings- und Testlogik
-
-Für die erste Auswertung werden zehn Zeilen vollständig zurückgehalten: je
-Beruf ein positives und ein negatives Beispiel. Die übrigen 50 Zeilen bilden
-die Trainingsmenge. Diese bewusste Schichtung macht beide Fehlerarten im
-Unterricht sichtbar, bildet aber **nicht** die Häufigkeit digitaler
-Kompetenzen ab.
-
-Zusätzlich wird jeder Beruf einmal vollständig zurückgehalten
-(*leave one occupation out*). Das Modell wird dann jeweils auf den anderen
-vier Berufen trainiert. Diese strengere Prüfung zeigt, ob gelernte Wortmuster
-auf einen ungesehenen Beruf übertragbar sind.
-
-```{r}
-#| label: klassische-nlp-ergebnisse
-#| echo: false
-#| results: asis
-
-if (!isTRUE(params$self_study_solutions) &&
-    !isTRUE(params$show_reference)) {
-  cat(
-    "> Die Modellresultate und Fehlerbeispiele werden zusammen mit der ",
-    "Referenzkodierung erst nach der Handkodierung freigegeben."
-  )
-} else {
-  # Diese Ergebnisdateien werden nur in der Dozierendenfassung geöffnet.
-  classic_run <- read_csv(
-    "output/tables/classic_nlp_run_summary.csv",
-    show_col_types = FALSE
-  )
-  classic_metrics <- read_csv(
-    "output/tables/classic_nlp_metrics.csv",
-    show_col_types = FALSE
-  )
-  classic_features <- read_csv(
-    "output/tables/classic_nlp_feature_coefficients.csv",
-    show_col_types = FALSE
-  )
-  classic_errors <- read_csv(
-    "output/tables/classic_nlp_error_analysis.csv",
-    show_col_types = FALSE
-  )
-
-  cat("### Modellkonfiguration\n\n")
-  classic_run |>
-    transmute(
-      Trainingszeilen = training_rows,
-      Testzeilen = test_rows,
-      `positive Testfälle` = test_positive,
-      `negative Testfälle` = test_negative,
-      `TF-IDF-Merkmale` = vocabulary_size,
-      `Mindest-Dokumenthäufigkeit` = minimum_document_frequency,
-      `Ridge-Parameter` = ridge_lambda,
-      Schwelle = classification_threshold
-    ) |>
-    kable() |>
-    print()
-
-  cat("\n\n### Illustrative Klassifikationsgüte\n\n")
-  classic_metrics |>
-    transmute(
-      Auswertung = evaluation,
-      n,
-      Accuracy = round(accuracy, 2),
-      Precision = round(precision, 2),
-      Recall = round(recall, 2),
-      F1 = round(f1, 2),
-      FP = false_positive,
-      FN = false_negative
-    ) |>
-    kable() |>
-    print()
-
-  cat("\n\n### Stärkste Textmerkmale der ersten Auswertung\n\n")
-  classic_features |>
-    slice_head(n = 12) |>
-    transmute(
-      Wort = feature,
-      Koeffizient = round(coefficient, 3),
-      Richtung = direction
-    ) |>
-    kable() |>
-    print()
-
-  cat("\n\n### Fehlklassifikationen der zurückgehaltenen Testmenge\n\n")
-  classic_errors |>
-    filter(evaluation == "stratifizierte Testmenge") |>
-    transmute(
-      Beruf = occupation,
-      Kompetenzzeile = learning_goal_text,
-      Referenz = reference_label,
-      Wahrscheinlichkeit = round(model_probability, 2),
-      Modell = model_label,
-      Fehler = error_type
-    ) |>
-    kable() |>
-    print()
-}
-```
-
-### Aufgabe 3: Modell und Fehler interpretieren
-
-1. Welche der stärksten Wörter bezeichnen tatsächlich digitale Kompetenzen?
-2. Welche Wörter bilden vor allem einen Beruf oder die Stichprobe ab?
-3. Warum ist eine Berufsbezeichnung als starkes Merkmal problematisch?
-4. Unterscheiden sich die Ergebnisse der geschichteten Testmenge und des
-   Leave-one-occupation-out-Ansatzes?
-5. Wählen Sie ein False Positive und ein False Negative aus. Entsteht der
-   Fehler durch die Textmerkmale, den beruflichen Kontext oder die
-   Arbeitsdefinition?
-
-## Vergleich frei zugänglicher Chatmodelle
-
-In dieser Phase gibt es **keine direkte LLM-Schnittstelle**. Sie verwenden in
-Einzelarbeit zwei frei zugängliche Chatdienste im Browser, beispielsweise
-ChatGPT und Gemini. Sie lassen von beiden Diensten mit demselben Prompt
-dieselben fünf Kompetenzzeilen klassifizieren.
-
-::: {.callout-important}
-## Vergleichsdesign
-
-- Verwenden Sie für beide Chatmodelle exakt denselben Prompt und dieselben fünf
-  Fälle.
-- Beginnen Sie einen neuen Chat ohne vorherigen Gesprächskontext.
-- Verwenden Sie nur die erste Antwort. Korrigieren oder präzisieren Sie den
-  Prompt anschließend nicht.
-- Dokumentieren Sie Dienst, angezeigten Modellnamen und Zugriffsdatum. Falls
-  kein Modellname angezeigt wird, tragen Sie „nicht ausgewiesen“ ein.
-- Geben Sie keine Namen, E-Mail-Adressen oder anderen personenbezogenen Daten
-  in den Chat ein.
-:::
-
-Die fünf Fälle enthalten je eine Kompetenzzeile aus jedem Beruf:
-
-```{r}
-#| label: browser-modellvergleich-faelle
-#| echo: false
-
-browser_sample <- read_csv(
-  "data/derived/classroom_model_comparison_sample.csv",
-  show_col_types = FALSE,
-  locale = locale(encoding = "UTF-8")
-)
-
-browser_sample |>
-  # IDs bleiben in der CSV; für die Anzeige genügt eine kompakte Auswahl.
-  select(
-    case_number,
-    occupation,
-    unit_name,
-    learning_goal_text
+coding_solution |>
+  transmute(
+    ID = unit_id,
+    Kompetenzzeile = learning_goal_text,
+    Referenz = reference_label,
+    Begründung = reference_rationale
   ) |>
-  kable(
-    col.names = c(
-      "Fall", "Beruf", "Berufsbildposition", "Kompetenzzeile"
-    ),
-    caption = "Identische Fälle für den Browser-Modellvergleich"
-  )
+  kable(caption = "Dozierendenreferenz für die zehn Testfälle")
+```
+:::
+
+## 5. Klassisches ML auf allen Kompetenzzeilen
+
+Für eine größere Dozierendenstichprobe liegen 60 handkodierte
+Kompetenzzeilen vor. Das
+[kommentierte ML-Skript](source/scripts/08_classic_nlp.R) kombiniert Beruf,
+Berufsbildposition und Lernziel, berechnet TF-IDF-Wortmerkmale und schätzt
+eine regularisierte logistische Regression.
+
+Die Vorgehensweise besteht aus zwei getrennten Schritten:
+
+1. **Evaluation:** Zehn Fälle werden zurückgehalten. Das Modell wird mit den
+   übrigen 50 Fällen trainiert und auf den zehn unbekannten Fällen geprüft.
+   Zusätzlich wird jeder Beruf einmal vollständig zurückgehalten.
+2. **Korpusklassifikation:** Danach wird ein neues Modell mit allen 60
+   Dozierendenkodierungen trainiert und auf sämtliche 895 Kompetenzzeilen
+   angewandt.
+
+Die Evaluation ist aufgrund der kleinen Stichprobe nur illustrativ:
+
+```{r}
+#| label: tab-ml-guete
+#| echo: false
+
+classic_metrics |>
+  transmute(
+    Auswertung = evaluation,
+    Fälle = n,
+    Accuracy = round(accuracy, 2),
+    Precision = round(precision, 2),
+    Recall = round(recall, 2),
+    F1 = round(f1, 2)
+  ) |>
+  kable(caption = "Illustrative Klassifikationsgüte")
 ```
 
-### Aufgabe 4: Fünf Fälle mit zwei Chatmodellen klassifizieren
+Das abschließende Modell klassifiziert den gesamten Korpus wie folgt:
 
-1. Wählen Sie zwei frei zugängliche Chatmodelle aus.
-2. Öffnen Sie beim ersten Modell einen neuen Chat.
-3. Kopieren Sie den
-   [vorbereiteten Prompt](downloads/classroom_model_comparison_prompt.txt)
-   vollständig und unverändert in den Chat.
-4. Übertragen Sie die fünf Labels, Konfidenzen und Begründungen in eine Kopie
-   der
+```{r}
+#| label: tab-ml-korpus
+#| echo: false
+
+all_predictions_summary |>
+  transmute(
+    Ausbildungsberuf = occupation,
+    Kompetenzzeilen = competency_rows,
+    `davon digital` = predicted_digital,
+    `digitaler Anteil` = round(predicted_digital_share, 2)
+  ) |>
+  kable(caption = "ML-Klassifikation aller Kompetenzzeilen")
+```
+
+Die einzelnen Vorhersagen stehen im
+[vollständigen Ergebnisdatensatz](source/data/derived/classic_nlp_all_predictions.csv).
+Die Werte sind ein Demonstrationsergebnis, keine belastbare Rangliste der
+Berufe.
+
+## 6. Vergleich: ML und eigene Handkodierung
+
+Vergleichen Sie nun Ihre zehn Labels mit der Dozierendenreferenz und den
+Vorhersagen des Modells. Die ML-Werte stammen ausschließlich aus dem Modell,
+das diese zehn Fälle beim Training nicht gesehen hat.
+
+```{r}
+#| label: tab-vergleich-hand-ml
+#| echo: false
+
+coding_solution |>
+  transmute(
+    ID = unit_id,
+    Referenz = reference_label,
+    `ML-Wahrscheinlichkeit` = round(model_probability, 2),
+    `ML-Label` = model_label,
+    Ergebnis = error_type
+  ) |>
+  kable(caption = "Referenz und ML auf den zehn Testfällen")
+```
+
+Beantworten Sie kurz:
+
+1. Bei welchen Fällen weicht Ihre Kodierung von der Referenz ab?
+2. Welche False Positives und False Negatives erzeugt das ML-Modell?
+3. Liegt die Abweichung eher an einzelnen Wörtern, am beruflichen Kontext oder
+   an der Arbeitsdefinition?
+
+## 7. Händische Klassifikation mit Chatmodellen
+
+Nun klassifizieren zwei frei zugängliche Chatmodelle dieselben fünf Fälle, die
+in Schritt 2 als Beispiele angezeigt wurden. Eine API oder lokale
+LLM-Installation ist nicht erforderlich.
+
+1. Wählen Sie zwei Chatmodelle, beispielsweise ChatGPT und Gemini.
+2. Beginnen Sie bei jedem Modell einen neuen Chat.
+3. Übergeben Sie beiden Modellen den
+   [identischen vorbereiteten Prompt](downloads/classroom_model_comparison_prompt.txt).
+4. Verwenden Sie jeweils nur die erste Antwort und verändern Sie den Prompt
+   nicht nachträglich.
+5. Übertragen Sie Label, Konfidenz und Begründung in je eine Kopie der
    [Ergebnisvorlage](downloads/model_comparison_results_template.csv).
-5. Speichern Sie die Datei unter dem Namen des verwendeten Dienstes,
-   beispielsweise als `chatgpt.csv`.
-6. Wiederholen Sie die Schritte 2 bis 5 mit dem zweiten Modell und einer neuen
-   Kopie der Ergebnisvorlage, beispielsweise `gemini.csv`.
-
-::: {.callout-warning}
-## Nur fünf Beobachtungen
-
-Die fünf Fälle ermöglichen eine kompakte Gegenüberstellung, aber keine
-belastbare Rangliste von Chatmodellen. Ein einzelner zusätzlicher Treffer
-verändert die Accuracy bereits um `0,20`. Berichten Sie deshalb neben der
-Trefferzahl immer die konkreten False Positives und False Negatives.
-:::
+6. Dokumentieren Sie Dienst, angezeigten Modellnamen und Datum. Geben Sie
+   keine personenbezogenen Daten in den Chat ein.
 
 ::: {.callout-tip collapse="true"}
-## Auflösung des Modellvergleichs
-
-Öffnen Sie diesen Abschnitt erst, nachdem Sie die Antworten beider
-Chatmodelle gespeichert haben.
-
-Danach werden drei Größen auf exakt denselben Fällen
-verglichen:
-
-1. die Dozierendenreferenz,
-2. die Ergebnisse der verschiedenen Chatmodelle und
-3. die bereits erzeugten Leave-one-occupation-out-Vorhersagen des klassischen
-   TF-IDF-Modells.
+**Vergleichswerte erst nach beiden Modellantworten öffnen**
 
 ```{r}
-#| label: browser-modellvergleich-aufloesung
+#| label: aufloesung-chatmodelle
 #| echo: false
-#| results: asis
 
-if (!isTRUE(params$self_study_solutions) &&
-    !isTRUE(params$show_reference)) {
-  cat(
-    "> Referenz und ML-Vorhersagen bleiben bis zur Abgabe der ",
-    "Chatmodell-Ergebnisse ausgeblendet."
-  )
-} else {
-  # Die Selbstlernfassung enthält nur die fünf für diese Aufgabe benötigten
-  # Referenz- und ML-Werte. Interne Dozierendendateien bleiben ausgeschlossen.
-  model_comparison_path <- if (
-    file.exists("data/self_study/model_comparison_solution.csv")
-  ) {
-    "data/self_study/model_comparison_solution.csv"
-  } else {
-    "data/manual/instructor/model_comparison_reference.csv"
-  }
-
-  model_comparison_reference <- read_csv(
-    model_comparison_path,
-    show_col_types = FALSE,
-    locale = locale(encoding = "UTF-8")
-  )
-
-  model_comparison_reference |>
-    transmute(
-      Fall = case_number,
-      Beruf = occupation,
-      Kompetenzzeile = learning_goal_text,
-      Referenz = reference_label,
-      `ML-Wahrscheinlichkeit` = round(ml_probability, 2),
-      `ML-Label` = ml_label,
-      `ML korrekt` = ml_label == reference_label
-    ) |>
-    kable(caption = "Auflösung und klassisches ML auf denselben fünf Fällen") |>
-    print()
-
-  if (file.exists("output/tables/classroom_model_comparison_metrics.csv")) {
-    cat("\n\n### Ergebnisse der Chatmodelle\n\n")
-    read_csv(
-      "output/tables/classroom_model_comparison_metrics.csv",
-      show_col_types = FALSE
-    ) |>
-      # Einheitliche Spalten machen Chatmodelle und klassisches ML vergleichbar.
-      transmute(
-        Methode = method,
-        n,
-        Treffer = correct,
-        Accuracy = round(accuracy, 2),
-        FP = false_positive,
-        FN = false_negative
-      ) |>
-      kable() |>
-      print()
-  } else {
-    cat(
-      "\n\n> Die Ergebnistabelle entsteht erst aus den tatsächlichen ",
-      "Modellantworten; es werden keine Antworten vorab eingesetzt."
-    )
-  }
-}
+model_comparison_solution |>
+  transmute(
+    Fall = case_number,
+    Kompetenzzeile = learning_goal_text,
+    Referenz = reference_label,
+    `ML-Wahrscheinlichkeit` = round(ml_probability, 2),
+    `ML-Label` = ml_label
+  ) |>
+  kable(caption = "Referenz und klassisches ML für die fünf LLM-Fälle")
 ```
 :::
 
-### Leitfragen zum Modellvergleich
+Vergleichen Sie anschließend:
 
-1. Bei welchen Fällen stimmen beide Chatmodelle überein?
-2. Welches Modell folgt dem beruflichen Kontext statt einzelnen Schlüsselwörtern?
-3. Wo unterscheiden sich die beiden Modelle trotz identischer Fälle und
-   identischem Prompt?
-4. Welche Fehler macht das klassische ML, welche die Chatmodelle?
-5. Ist eine plausible Begründung mit einem korrekten Label gleichzusetzen?
+1. Bei welchen Fällen stimmen Handkodierung, ML und beide Chatmodelle überein?
+2. Welches Verfahren berücksichtigt den beruflichen Kontext am besten?
+3. Ist eine plausible Begründung automatisch ein Hinweis auf ein korrektes
+   Label?
 
-## Ausblick: drei Verfahren — dieselbe Zielvariable
+Fünf Fälle reichen nicht für eine Rangliste von Modellen. Ein einzelner
+zusätzlicher Treffer verändert die Accuracy bereits um 0,20.
 
-Alle drei Verfahren sollen Lernziele derselben Kategorie „digital“ oder „nicht
-digital“ zuordnen. Sie unterscheiden sich im Aufwand, in der Transparenz und
-in der Skalierbarkeit.
+## 8. Abschließende Diskussion
 
-| Verfahren | Typisches Vorgehen | Vorteil | Nachteil |
-|---|---|---|---|
-| Handkodierung | Kodierende wenden ein Codebuch auf Lernziele an und dokumentieren Grenzfälle. | höchste inhaltliche Kontrolle und Transparenz | hoher Zeitaufwand, schlecht skalierbar |
-| Supervised ML/NLP | Handkodierte Trainingsdaten → numerische Textmerkmale, etwa TF-IDF → Klassifikationsmodell → Anwendung auf den Rest des Korpus | nach dem Training auf große Korpora skalierbar | benötigt ausreichend gelabelte Trainingsdaten; Generalisierung unsicher |
-| Browserbasierte LLM-Klassifikation | Dieselbe Person übergibt denselben Prompt und dieselben fünf Fälle an zwei frei zugängliche Chatmodelle. | ohne API oder lokale Installation durchführbar; zwei Modelle direkt vergleichbar | Modellversion und Laufbedingungen nur begrenzt kontrollierbar; fünf Fälle erlauben keine belastbare Rangliste |
+| Verfahren | Stärke | Zentrale Grenze |
+|---|---|---|
+| Handkodierung | transparente inhaltliche Entscheidung | zeitaufwendig und schwer skalierbar |
+| Klassisches ML | auf große Korpora anwendbar | benötigt gelabelte Trainingsdaten und generalisiert möglicherweise schlecht |
+| Chatmodell | ohne eigene Modellschätzung leicht zugänglich | Modellversion und Laufbedingungen sind nur begrenzt kontrollierbar |
 
-Beim Supervised ML/NLP darf die Evaluation nicht auf den Trainingsdaten
-erfolgen. Eine separate Testmenge wird vollständig zurückgehalten. Auch ein
-LLM wird nicht dadurch validiert, dass sein Prompt so lange an denselben
-Referenzfällen verändert wird, bis die Übereinstimmung hoch ist.
+Diskutieren Sie abschließend:
 
-::: {.callout-important}
-## Referenzpunkt
+1. Welche Entscheidungen wurden bereits vor der eigentlichen Klassifikation
+   getroffen?
+2. Welches Verfahren würden Sie für einen großen historischen Korpus wählen?
+3. Welche zusätzliche Referenzstichprobe wäre für eine belastbare Evaluation
+   notwendig?
+4. Was misst der berechnete digitale Anteil – und was misst er ausdrücklich
+   nicht?
 
-Die unabhängige Handkodierung liefert den Referenzpunkt für die beiden
-automatisierten Verfahren. Einheiten, die zur Modellschätzung oder
-Prompt-Anpassung verwendet wurden, sind kein unabhängiger Test mehr.
-:::
-
-## Was bedeutet Validierung hier?
-
-In dieser Übung prüfen wir zunächst die **Klassifikationsgüte**: Stimmen
-automatische Labels auf einer zurückgehaltenen, handkodierten Stichprobe mit
-dem Referenzpunkt überein? Dazu gehören Kennzahlen und eine inhaltliche
-Fehleranalyse.
-
-Das ist noch keine vollständige **Konstruktvalidierung**. Der Lehrvortrag nennt
-als weiterführenden Schritt den Abgleich mit externen Taxonomien oder
-alternativen Datenquellen, beispielsweise der
-BIBB/BAuA-Erwerbstätigenbefragung. Ein solcher Abgleich liegt außerhalb dieser
-stilisierten Übung.
-
-## Auflösungen in der Selbstlernfassung
-
-Die Selbstlernfassung zeigt die dokumentierte Referenz für die zehn
-Handkodierungsfälle sowie für die fünf Fälle des Chatmodellvergleichs. Damit
-können Sie Ihre Ergebnisse eigenständig prüfen. Öffnen Sie die jeweilige
-Auflösung erst, nachdem Sie Ihre Entscheidung gespeichert haben.
-
-Für die vollständige Reproduzierbarkeit des klassischen Modells enthält das
-öffentliche R-Projekt außerdem einen auf die Analysevariablen reduzierten
-Modelldatensatz. Personenbezogene Angaben und interne Dozierendenvermerke sind
-nicht enthalten.
-
-```{r}
-#| label: referenz-freigabe
-#| echo: false
-#| results: asis
-
-if (!isTRUE(params$show_reference)) {
-  cat(
-    "> Die vollständigen 60 Referenzbegründungen sind nicht Bestandteil ",
-    "der öffentlichen Selbstlernfassung."
-  )
-} else {
-  # Diese Datei wird bewusst erst in der Dozierendenfassung geöffnet.
-  reference <- read_csv(
-    "data/manual/instructor/instructor_reference_template.csv",
-    show_col_types = FALSE,
-    locale = locale(encoding = "UTF-8")
-  )
-
-  completed_reference <- reference |>
-    # Nur tatsächlich ausgefüllte Referenzentscheidungen anzeigen.
-    filter(!is.na(reference_label))
-
-  if (nrow(completed_reference) == 0) {
-    cat(
-      "> Die Dozierendenvorlage enthält noch keine geprüften ",
-      "Referenzlabels."
-    )
-  } else {
-    completed_reference |>
-      select(
-        unit_id,
-        occupation,
-        learning_goal_text,
-        reference_label,
-        reference_rationale
-      ) |>
-      kable(caption = "Freigegebene Referenzkodierung")
-  }
-}
-```
-
-Die interne Dozierendenfassung kann zusätzlich die vollständige
-Referenztabelle anzeigen.
-
-## Kernbotschaften
-
-1. **Ausbildungsordnungen sind Daten.** Ihre standardisierte Form macht
-   curricular festgelegte Kompetenzanforderungen zwischen Berufen
-   vergleichbar.
-2. **Der Weg vom Text zur Variable ist der eigentliche Forschungsbeitrag.**
-   Der Datensatz und die Klassifikation als digital oder nicht digital werden
-   nicht einfach beobachtet, sondern durch Entscheidungen über Digitalisierung,
-   Analyseeinheit, Codebuch und Aggregation konstruiert.
-3. **Methodenwahl ist eine bewusste Entscheidung.** Datenqualität,
-   Skalierbarkeit, Transparenz und Validierungsaufwand entscheiden zwischen
-   Handkodierung, Supervised ML/NLP und LLM-Klassifikation — nicht die bloße
-   Verfügbarkeit eines Tools.
-4. **Ein unabhängiger Referenzpunkt bleibt unverzichtbar.** Auch das
-   leistungsfähigste automatische Verfahren benötigt eine zurückgehaltene,
-   handkodierte Stichprobe und eine Analyse seiner konkreten Fehler.
+Die zentrale Botschaft lautet: Der Weg vom Rechtstext zur quantitativen
+Variable ist selbst ein Forschungsbeitrag. Kein Klassifikationsverfahren
+ersetzt eine klare Definition, nachvollziehbare Datenaufbereitung und
+unabhängige Validierung.

@@ -53,6 +53,15 @@ reference <- readr::read_csv(
     model_text = paste(occupation, unit_name, learning_goal_text, sep = " | ")
   )
 
+curriculum <- readr::read_csv(
+  "data/derived/curriculum_units.csv",
+  show_col_types = FALSE,
+  locale = readr::locale(encoding = "UTF-8")
+) |>
+  dplyr::mutate(
+    model_text = paste(occupation, unit_name, learning_goal_text, sep = " | ")
+  )
+
 if (nrow(reference) != 60L ||
     any(!reference$reference_label %in% c(0L, 1L)) ||
     anyDuplicated(reference$unit_id)) {
@@ -294,6 +303,35 @@ logo_predictions <- lapply(unique(reference$occupation), function(test_occupatio
 }) |>
   dplyr::bind_rows()
 
+# Nach der getrennten Evaluation wird das Modell auf allen 60
+# Referenzkodierungen trainiert und auf den vollständigen Korpus angewandt.
+# Diese Vorhersagen dienen der deskriptiven Auswertung, nicht der Gütemessung.
+full_fit <- fit_and_predict(reference, curriculum)
+
+all_predictions <- curriculum |>
+  dplyr::transmute(
+    unit_id,
+    occupation_id,
+    occupation,
+    section,
+    track_type,
+    track_name,
+    unit_name,
+    learning_goal_text,
+    model_probability = full_fit$probability,
+    model_label = full_fit$prediction
+  )
+
+all_predictions_summary <- all_predictions |>
+  dplyr::group_by(occupation) |>
+  dplyr::summarise(
+    competency_rows = dplyr::n(),
+    predicted_digital = sum(model_label),
+    predicted_digital_share = mean(model_label),
+    .groups = "drop"
+  ) |>
+  dplyr::arrange(occupation)
+
 # bind_rows() stellt beide Evaluationsdesigns in einer gemeinsamen Tabelle dar.
 metrics <- dplyr::bind_rows(
   classification_metrics(
@@ -363,6 +401,11 @@ readr::write_csv(
   na = ""
 )
 readr::write_csv(
+  all_predictions,
+  "data/derived/classic_nlp_all_predictions.csv",
+  na = ""
+)
+readr::write_csv(
   metrics,
   "output/tables/classic_nlp_metrics.csv",
   na = ""
@@ -383,6 +426,11 @@ readr::write_csv(
   na = ""
 )
 readr::write_csv(
+  all_predictions_summary,
+  "output/tables/classic_nlp_all_predictions_summary.csv",
+  na = ""
+)
+readr::write_csv(
   data.frame(
     training_rows = nrow(training),
     test_rows = nrow(test),
@@ -398,7 +446,8 @@ readr::write_csv(
 )
 
 message(
-  "Phase 4 abgeschlossen: ", nrow(training), " Trainingsfälle, ",
+  "Klassisches ML abgeschlossen: ", nrow(training), " Trainingsfälle, ",
   nrow(test), " Testfälle, ",
-  length(holdout_fit$vectorizer$vocabulary), " TF-IDF-Merkmale."
+  length(holdout_fit$vectorizer$vocabulary), " TF-IDF-Merkmale und ",
+  nrow(all_predictions), " Korpusvorhersagen."
 )
