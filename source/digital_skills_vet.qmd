@@ -258,15 +258,17 @@ coding_solution |>
 
 Für die Umsetzung eines supervised ML-Verfahrens benötigen wir eine umfassende Vorkodierung. Im Idealfall würden hier unabhängige Votings menschlicher Experten herangezogen werden. Für diese Übung haben wir stattdessen alle 895 Kompetenzzeilen zunächst mit `gpt-5.4-nano-2026-03-17` auf Basis des Codebuchs vorkodiert (dieser Schritt ist bereits ausgeführt -- Sie benötigen keine OpenAI-API). Diese LLM-Labels sind **Silver Labels**: Sie ermöglichen ein großes Trainingsset, sind aber nicht der angestrebte Goldstandard. 
 
-<details>
-<summary><strong>supervised ML</strong></summary>
-Ein supervised-ML-Verfahren lernt aus Beispielen, bei denen das richtige Label bereits bekannt ist. Hier sieht das Modell Kompetenzzeilen mit der Zuordnung `digital` oder `nicht digital` und lernt daraus, neue Zeilen zu klassifizieren.
-</details>
+::: {.callout-note collapse="true"}
+## Begriffserklärung: Supervised ML
 
-<details>
-<summary><strong>API</strong></summary>
+Ein supervised-ML-Verfahren lernt aus Beispielen, bei denen das richtige Label bereits bekannt ist. Hier sieht das Modell Kompetenzzeilen mit der Zuordnung `digital` oder `nicht digital` und lernt daraus, neue Zeilen zu klassifizieren.
+:::
+
+::: {.callout-note collapse="true"}
+## Begriffserklärung: API
+
 Eine API ist eine Programmierschnittstelle. Über sie kann ein Skript ein Modell wie OpenAI Nano automatisch ansprechen. In dieser Übung ist dieser Schritt bereits dozierendenseitig ausgeführt; Studierende benötigen keinen API-Schlüssel.
-</details>
+:::
 
 Die folgende Evaluation folgt vier Schritten:
 
@@ -276,10 +278,11 @@ Die folgende Evaluation folgt vier Schritten:
 3. Sowohl das LLM als auch eine regularisierte logistische Regression mit
    TF-IDF-Wortmerkmalen werden gegen dieselben 90 Goldlabels geprüft.
 
-<details>
-<summary><strong>TF-IDF-Wortmerkmale</strong></summary>
+::: {.callout-note collapse="true"}
+## Begriffserklärung: TF-IDF-Wortmerkmale
+
 TF-IDF beschreibt Texte über Wörter und deren Gewicht. Ein Wort erhält ein hohes Gewicht, wenn es in einer Kompetenzzeile vorkommt, aber nicht überall im Datensatz auftaucht. Dadurch zählen eher unterscheidungskräftige Wörter als sehr häufige Allgemeinwörter.
-</details>
+:::
 
 ```{r}
 #| label: tab-hybrid-guete
@@ -302,30 +305,35 @@ hybrid_metrics |>
   kable(caption = "Evaluation auf 90 blind handkodierten Kompetenzzeilen")
 ```
 
-<details>
-<summary><strong>Accuracy</strong></summary>
+::: {.callout-note collapse="true"}
+## Begriffserklärung: Accuracy
+
 Accuracy ist der Anteil aller korrekt klassifizierten Fälle. Wenn 84 von 90 Fällen richtig sind, beträgt die Accuracy 84/90 = 0,93. Bei unausgewogenen Daten kann Accuracy aber täuschen.
-</details>
+:::
 
-<details>
-<summary><strong>Precision</strong></summary>
+::: {.callout-note collapse="true"}
+## Begriffserklärung: Precision
+
 Precision fragt: Von allen Fällen, die das Modell als digital klassifiziert, wie viele sind laut Goldstandard tatsächlich digital? Hohe Precision bedeutet wenige Fehlalarme.
-</details>
+:::
 
-<details>
-<summary><strong>Recall</strong></summary>
+::: {.callout-note collapse="true"}
+## Begriffserklärung: Recall
+
 Recall fragt: Von allen tatsächlich digitalen Fällen, wie viele findet das Modell? Hoher Recall bedeutet, dass wenige digitale Fälle übersehen werden.
-</details>
+:::
 
-<details>
-<summary><strong>F1</strong></summary>
+::: {.callout-note collapse="true"}
+## Begriffserklärung: F1
+
 F1 fasst Precision und Recall in einer Kennzahl zusammen. Der Wert ist besonders nützlich, wenn beide Fehlerarten relevant sind: digitale Fälle nicht übersehen, aber auch nicht zu viele nicht-digitale Fälle fälschlich als digital markieren.
-</details>
+:::
 
-<details>
-<summary><strong>False Positive / False Negative</strong></summary>
+::: {.callout-note collapse="true"}
+## Begriffserklärung: False Positive / False Negative
+
 Ein False Positive ist ein Fehlalarm: Das Modell sagt `digital`, der Goldstandard sagt aber `nicht digital`. Ein False Negative ist ein übersehener digitaler Fall: Das Modell sagt `nicht digital`, der Goldstandard sagt aber `digital`.
-</details>
+:::
 
 Die Stichprobe der handkodierten Fälle ist sehr ungleich verteilt. Nur 11 der 90 handkodierten Testfälle sind digitale Kompetenzen. Deshalb ist Accuracy allein wenig aussagekräftig: Ein Modell kann viele Fälle richtig klassifizieren, indem es fast immer „nicht digital“ vorhersagt. Nano erkennt zwar alle 11 digitalen Fälle, stuft aber zusätzlich 7 nicht-digitale Fälle fälschlich als digital ein. Das klassische ML ist konservativer: Es erzeugt 3 solche Fehlalarme, übersieht dafür aber 3 tatsächlich digitale Fälle.
 
