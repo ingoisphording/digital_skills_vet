@@ -2651,7 +2651,8 @@ Tipp
 </div>
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>TF-IDF beschreibt Texte über Wörter und deren Gewicht. Ein Wort erhält ein hohes Gewicht, wenn es in einer Kompetenzzeile vorkommt, aber nicht überall im Datensatz auftaucht. Dadurch zählen eher unterscheidungskräftige Wörter als sehr häufige Allgemeinwörter.</p>
+<p>TF-IDF steht für <strong>Term Frequency – Inverse Document Frequency</strong>. Das Verfahren beschreibt Texte über die Wörter, die in ihnen vorkommen, gewichtet diese Wörter aber unterschiedlich. Ein Wort erhält ein höheres Gewicht, wenn es in einer bestimmten Kompetenzzeile häufig oder besonders charakteristisch vorkommt (<em>term frequency</em>), aber im gesamten Datensatz nicht überall auftaucht (<em>inverse document frequency</em>).</p>
+<p>Die Logik dahinter: Wörter wie „durchführen“, „beachten“ oder „anwenden“ kommen in vielen Ausbildungsordnungen vor und helfen daher wenig, digitale von nicht-digitalen Kompetenzen zu unterscheiden. Wörter wie „Software“, „IT-Systeme“, „Daten“ oder „automatisieren“ sind seltener und für unsere Fragestellung informativer. TF-IDF sorgt dafür, dass solche unterscheidenden Wörter im Modell stärker zählen als sehr häufige Allgemeinwörter.</p>
 </div>
 </div>
 </div>
@@ -2718,7 +2719,7 @@ Tipp
 </div>
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Accuracy ist der Anteil aller korrekt klassifizierten Fälle. Wenn 84 von 90 Fällen richtig sind, beträgt die Accuracy 84/90 = 0,93. Bei unausgewogenen Daten kann Accuracy aber täuschen.</p>
+<p>Accuracy ist, gemeinsam mit Precision und Recall, eine Metrik, um die Vorhersagegüte eines Modells zu beschreiben. Sie misst den Anteil aller korrekt klassifizierten Fälle. Wenn 84 von 90 Fällen richtig sind, beträgt die Accuracy 84/90 = 0,93. Bei unausgewogenen Daten kann Accuracy aber täuschen.</p>
 </div>
 </div>
 </div>

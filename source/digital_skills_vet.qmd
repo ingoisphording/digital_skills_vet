@@ -281,7 +281,19 @@ Die folgende Evaluation folgt vier Schritten:
 ::: {.callout-note collapse="true"}
 ## Begriffserklärung: TF-IDF-Wortmerkmale
 
-TF-IDF beschreibt Texte über Wörter und deren Gewicht. Ein Wort erhält ein hohes Gewicht, wenn es in einer Kompetenzzeile vorkommt, aber nicht überall im Datensatz auftaucht. Dadurch zählen eher unterscheidungskräftige Wörter als sehr häufige Allgemeinwörter.
+TF-IDF steht für **Term Frequency -- Inverse Document Frequency**. Das Verfahren
+beschreibt Texte über die Wörter, die in ihnen vorkommen, gewichtet diese Wörter
+aber unterschiedlich. Ein Wort erhält ein höheres Gewicht, wenn es in einer
+bestimmten Kompetenzzeile häufig oder besonders charakteristisch vorkommt
+(*term frequency*), aber im gesamten Datensatz nicht überall auftaucht
+(*inverse document frequency*).
+
+Die Logik dahinter: Wörter wie „durchführen“, „beachten“ oder „anwenden“ kommen
+in vielen Ausbildungsordnungen vor und helfen daher wenig, digitale von
+nicht-digitalen Kompetenzen zu unterscheiden. Wörter wie „Software“,
+„IT-Systeme“, „Daten“ oder „automatisieren“ sind seltener und für unsere
+Fragestellung informativer. TF-IDF sorgt dafür, dass solche unterscheidenden
+Wörter im Modell stärker zählen als sehr häufige Allgemeinwörter.
 :::
 
 ```{r}
@@ -308,7 +320,10 @@ hybrid_metrics |>
 ::: {.callout-note collapse="true"}
 ## Begriffserklärung: Accuracy
 
-Accuracy ist der Anteil aller korrekt klassifizierten Fälle. Wenn 84 von 90 Fällen richtig sind, beträgt die Accuracy 84/90 = 0,93. Bei unausgewogenen Daten kann Accuracy aber täuschen.
+Accuracy ist, gemeinsam mit Precision und Recall, eine Metrik, um die
+Vorhersagegüte eines Modells zu beschreiben. Sie misst den Anteil aller korrekt
+klassifizierten Fälle. Wenn 84 von 90 Fällen richtig sind, beträgt die Accuracy
+84/90 = 0,93. Bei unausgewogenen Daten kann Accuracy aber täuschen.
 :::
 
 ::: {.callout-note collapse="true"}
