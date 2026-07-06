@@ -170,8 +170,6 @@ bestimmte Fachrichtungen oder Wahlqualifikationen. Eine einzelne Person
 absolviert nicht alle diese Alternativen. Die Variablen `track_type` und
 `track_name` halten deshalb fest, für wen eine Zeile gilt.
 
-xxx hier weitermachen xxx
-
 Fünf Beispielzeilen, die später erneut verwendet werden:
 
 ```{r}
@@ -190,20 +188,18 @@ browser_sample |>
 
 ## 3. Fragestellung und Konzeptualisierung
 
-> Wie hoch ist der Anteil der Kompetenzzeilen, die als digital klassifiziert
-> werden? Wie stark hängt das Ergebnis vom Klassifikationsverfahren ab?
+Die Forschungsfrage, die wir beantworten wollen, lautet: 
 
-Unsere Arbeitsdefinition lautet:
+> Wie hoch ist der Anteil digitaler Kompetenzen, die eine Ausbildungsordnung definiert?
+
+Wir fragen also, wie sehr sich definierte Berufe in ihren Kompetenzprofilen unterscheiden. Da wir jeweils die aktuell gültige Fassung der Ausbildungsordnungen betrachten, betrachten wir keine Entwicklung über die Zeit. 
+Unsere Arbeitsdefinition für eine digitale Kompetenz lautet:
 
 > Eine Kompetenzzeile ist digital, wenn ihre Erfüllung ausdrücklich die
 > Nutzung, Konfiguration, Entwicklung, Steuerung oder Analyse digitaler
 > Systeme, Software, Daten oder automatisierter digitaler Prozesse erfordert.
 
-Jede Zeile erhält `1` für digital oder `0` für nicht digital. Der digitale
-Anteil eines Berufs ist die Zahl digital kodierter Zeilen geteilt durch die
-Zahl aller einbezogenen Zeilen. Welche Fachrichtungen und
-Wahlqualifikationen einbezogen werden, muss dabei ausdrücklich festgelegt
-werden.
+Jede Kompetenzzeile erhält `1` für digital oder `0` für nicht digital. Der digitale Anteil eines Berufs ist die Zahl digital kodierter Zeilen geteilt durch die Zahl aller einbezogenen Zeilen. 
 
 Zwei einfache Ankerbeispiele:
 
@@ -214,19 +210,9 @@ Für Grenzfälle verwenden wir ein dokumentiertes
 [Codebuch](downloads/codebook_digital_competence.md), nicht nur unser
 Bauchgefühl.
 
-::: {.callout-warning}
-- Automatische Verfahren müssen gegen eine **unabhängige handkodierte
-  Referenz** geprüft werden.
-- Plausibel klingende Modelloutputs oder LLM-Begründungen sind keine
-  Validierung.
-:::
-
 ## 4. Übung: Handkodierung
 
-Kodieren Sie zunächst zehn Übungsfälle. Die kleine Auswahl dient dazu, das
-Codebuch anzuwenden und unterschiedliche Entscheidungen nachvollziehbar zu
-machen. Die eigentliche Modellevaluation in Schritt 5 verwendet eine davon
-getrennte, größere Testmenge.
+Wir beginnen zunächst damit, zehn Übungsfälle selbst per Hand zu kodieren. Die kleine Auswahl dient dazu, das Codebuch anzuwenden und unterschiedliche Entscheidungen nachvollziehbar zu machen. Die eigentliche Modellevaluation in Schritt 5 verwendet eine davon getrennte, größere Testmenge.
 
 ```{r}
 #| label: tab-handkodierung
@@ -251,7 +237,7 @@ exercise_sample |>
    unterstellen Sie keine nicht genannten Tätigkeiten.
 
 ::: {.callout-tip collapse="true"}
-**Auflösung erst nach der eigenen Kodierung öffnen**
+**Erst nach eigener Kodierung vergleichen!**
 
 ```{r}
 #| label: aufloesung-handkodierung
@@ -270,23 +256,30 @@ coding_solution |>
 
 ## 5. LLM-Vorkodierung und klassisches ML
 
-Für die dozierendenseitige Analyse wurden alle 895 Kompetenzzeilen zunächst
-mit `gpt-5.4-nano-2026-03-17` nach demselben Codebuch vorkodiert. Diese
-LLM-Labels sind **Silver Labels**: Sie ermöglichen ein großes Trainingsset,
-gelten aber nicht als unabhängige Wahrheit.
+Für die Umsetzung eines supervised ML-Verfahrens benötigen wir eine umfassende Vorkodierung. Im Idealfall würden hier unabhängige Votings menschlicher Experten herangezogen werden. Für diese Übung haben wir stattdessen alle 895 Kompetenzzeilen zunächst mit `gpt-5.4-nano-2026-03-17` auf Basis des Codebuchs vorkodiert (dieser Schritt ist bereits ausgeführt -- Sie benötigen keine OpenAI-API). Diese LLM-Labels sind **Silver Labels**: Sie ermöglichen ein großes Trainingsset, sind aber nicht der angestrebte Goldstandard. 
 
-Die Evaluation folgt vier Schritten:
+<details>
+<summary><strong>supervised ML</strong></summary>
+Ein supervised-ML-Verfahren lernt aus Beispielen, bei denen das richtige Label bereits bekannt ist. Hier sieht das Modell Kompetenzzeilen mit der Zuordnung `digital` oder `nicht digital` und lernt daraus, neue Zeilen zu klassifizieren.
+</details>
 
-1. Identische Kompetenztexte werden zu Gruppen zusammengefasst, damit
-   Dubletten nicht über Training und Test verteilt werden.
-2. 805 Kompetenzzeilen bilden das Trainingsset mit LLM-Silver-Labels.
-3. 90 zurückgehaltene Zeilen werden dozierendenseitig blind und ohne Kenntnis
-   der LLM-Antworten kodiert. Diese Labels bilden den Goldstandard.
-4. Sowohl das LLM als auch eine regularisierte logistische Regression mit
+<details>
+<summary><strong>API</strong></summary>
+Eine API ist eine Programmierschnittstelle. Über sie kann ein Skript ein Modell wie OpenAI Nano automatisch ansprechen. In dieser Übung ist dieser Schritt bereits dozierendenseitig ausgeführt; Studierende benötigen keinen API-Schlüssel.
+</details>
+
+Die folgende Evaluation folgt vier Schritten:
+
+1. 805 Kompetenzzeilen bilden das Trainingsset mit LLM-Silver-Labels.
+2. 90 zurückgehaltene Zeilen sind zudem dozierendenseitig blind und ohne Kenntnis
+   der LLM-Antworten kodiert worden. Diese Labels bilden einen menschlichen Experten-Goldstandard.
+3. Sowohl das LLM als auch eine regularisierte logistische Regression mit
    TF-IDF-Wortmerkmalen werden gegen dieselben 90 Goldlabels geprüft.
 
-Der API-Schritt ist bereits dozierendenseitig durchgeführt. Für diese Übung
-werden weder API-Schlüssel noch kostenpflichtiger Modellzugang benötigt.
+<details>
+<summary><strong>TF-IDF-Wortmerkmale</strong></summary>
+TF-IDF beschreibt Texte über Wörter und deren Gewicht. Ein Wort erhält ein hohes Gewicht, wenn es in einer Kompetenzzeile vorkommt, aber nicht überall im Datensatz auftaucht. Dadurch zählen eher unterscheidungskräftige Wörter als sehr häufige Allgemeinwörter.
+</details>
 
 ```{r}
 #| label: tab-hybrid-guete
@@ -309,9 +302,32 @@ hybrid_metrics |>
   kable(caption = "Evaluation auf 90 blind handkodierten Kompetenzzeilen")
 ```
 
-Nur 11 der 90 Goldlabels sind digital. Deshalb reicht Accuracy allein nicht:
-Nano findet alle digitalen Fälle, erzeugt aber sieben False Positives. Das
-klassische ML erzeugt drei False Positives und drei False Negatives.
+<details>
+<summary><strong>Accuracy</strong></summary>
+Accuracy ist der Anteil aller korrekt klassifizierten Fälle. Wenn 84 von 90 Fällen richtig sind, beträgt die Accuracy 84/90 = 0,93. Bei unausgewogenen Daten kann Accuracy aber täuschen.
+</details>
+
+<details>
+<summary><strong>Precision</strong></summary>
+Precision fragt: Von allen Fällen, die das Modell als digital klassifiziert, wie viele sind laut Goldstandard tatsächlich digital? Hohe Precision bedeutet wenige Fehlalarme.
+</details>
+
+<details>
+<summary><strong>Recall</strong></summary>
+Recall fragt: Von allen tatsächlich digitalen Fällen, wie viele findet das Modell? Hoher Recall bedeutet, dass wenige digitale Fälle übersehen werden.
+</details>
+
+<details>
+<summary><strong>F1</strong></summary>
+F1 fasst Precision und Recall in einer Kennzahl zusammen. Der Wert ist besonders nützlich, wenn beide Fehlerarten relevant sind: digitale Fälle nicht übersehen, aber auch nicht zu viele nicht-digitale Fälle fälschlich als digital markieren.
+</details>
+
+<details>
+<summary><strong>False Positive / False Negative</strong></summary>
+Ein False Positive ist ein Fehlalarm: Das Modell sagt `digital`, der Goldstandard sagt aber `nicht digital`. Ein False Negative ist ein übersehener digitaler Fall: Das Modell sagt `nicht digital`, der Goldstandard sagt aber `digital`.
+</details>
+
+Die Stichprobe der handkodierten Fälle ist sehr ungleich verteilt. Nur 11 der 90 handkodierten Testfälle sind digitale Kompetenzen. Deshalb ist Accuracy allein wenig aussagekräftig: Ein Modell kann viele Fälle richtig klassifizieren, indem es fast immer „nicht digital“ vorhersagt. Nano erkennt zwar alle 11 digitalen Fälle, stuft aber zusätzlich 7 nicht-digitale Fälle fälschlich als digital ein. Das klassische ML ist konservativer: Es erzeugt 3 solche Fehlalarme, übersieht dafür aber 3 tatsächlich digitale Fälle.
 
 Erst nach dieser Evaluation wird das klassische Modell mit allen verfügbaren
 Silver- und Goldlabels neu geschätzt und auf den Gesamtkorpus angewandt:

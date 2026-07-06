@@ -2333,7 +2333,6 @@ Hinweis
 </div>
 </div>
 <p>Einige Ordnungen enthalten neben gemeinsamen Inhalten zusätzliche Zeilen für bestimmte Fachrichtungen oder Wahlqualifikationen. Eine einzelne Person absolviert nicht alle diese Alternativen. Die Variablen <code>track_type</code> und <code>track_name</code> halten deshalb fest, für wen eine Zeile gilt.</p>
-<p>xxx hier weitermachen xxx</p>
 <p>Fünf Beispielzeilen, die später erneut verwendet werden:</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -2391,40 +2390,25 @@ Hinweis
 </section>
 <section id="fragestellung-und-konzeptualisierung" class="level2">
 <h2 class="anchored" data-anchor-id="fragestellung-und-konzeptualisierung">3. Fragestellung und Konzeptualisierung</h2>
+<p>Die Forschungsfrage, die wir beantworten wollen, lautet:</p>
 <blockquote class="blockquote">
-<p>Wie hoch ist der Anteil der Kompetenzzeilen, die als digital klassifiziert werden? Wie stark hängt das Ergebnis vom Klassifikationsverfahren ab?</p>
+<p>Wie hoch ist der Anteil digitaler Kompetenzen, die eine Ausbildungsordnung definiert?</p>
 </blockquote>
-<p>Unsere Arbeitsdefinition lautet:</p>
+<p>Wir fragen also, wie sehr sich definierte Berufe in ihren Kompetenzprofilen unterscheiden. Da wir jeweils die aktuell gültige Fassung der Ausbildungsordnungen betrachten, betrachten wir keine Entwicklung über die Zeit. Unsere Arbeitsdefinition für eine digitale Kompetenz lautet:</p>
 <blockquote class="blockquote">
 <p>Eine Kompetenzzeile ist digital, wenn ihre Erfüllung ausdrücklich die Nutzung, Konfiguration, Entwicklung, Steuerung oder Analyse digitaler Systeme, Software, Daten oder automatisierter digitaler Prozesse erfordert.</p>
 </blockquote>
-<p>Jede Zeile erhält <code>1</code> für digital oder <code>0</code> für nicht digital. Der digitale Anteil eines Berufs ist die Zahl digital kodierter Zeilen geteilt durch die Zahl aller einbezogenen Zeilen. Welche Fachrichtungen und Wahlqualifikationen einbezogen werden, muss dabei ausdrücklich festgelegt werden.</p>
+<p>Jede Kompetenzzeile erhält <code>1</code> für digital oder <code>0</code> für nicht digital. Der digitale Anteil eines Berufs ist die Zahl digital kodierter Zeilen geteilt durch die Zahl aller einbezogenen Zeilen.</p>
 <p>Zwei einfache Ankerbeispiele:</p>
 <ul>
 <li>„Teilaufgaben von IT-Systemen automatisieren“ → digital</li>
 <li>„Bedarfe von Kunden und Kundinnen feststellen“ → nicht digital</li>
 </ul>
 <p>Für Grenzfälle verwenden wir ein dokumentiertes <a href="downloads/codebook_digital_competence.md">Codebuch</a>, nicht nur unser Bauchgefühl.</p>
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Warnung
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li>Automatische Verfahren müssen gegen eine <strong>unabhängige handkodierte Referenz</strong> geprüft werden.</li>
-<li>Plausibel klingende Modelloutputs oder LLM-Begründungen sind keine Validierung.</li>
-</ul>
-</div>
-</div>
 </section>
 <section id="übung-handkodierung" class="level2">
 <h2 class="anchored" data-anchor-id="übung-handkodierung">4. Übung: Handkodierung</h2>
-<p>Kodieren Sie zunächst zehn Übungsfälle. Die kleine Auswahl dient dazu, das Codebuch anzuwenden und unterschiedliche Entscheidungen nachvollziehbar zu machen. Die eigentliche Modellevaluation in Schritt 5 verwendet eine davon getrennte, größere Testmenge.</p>
+<p>Wir beginnen zunächst damit, zehn Übungsfälle selbst per Hand zu kodieren. Die kleine Auswahl dient dazu, das Codebuch anzuwenden und unterschiedliche Entscheidungen nachvollziehbar zu machen. Die eigentliche Modellevaluation in Schritt 5 verwendet eine davon getrennte, größere Testmenge.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -2515,7 +2499,7 @@ Warnung
 <li>Verwenden Sie Lernziel, Berufsbildposition und Beruf als Kontext, aber unterstellen Sie keine nicht genannten Tätigkeiten.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2524,9 +2508,9 @@ Tipp
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><strong>Auflösung erst nach der eigenen Kodierung öffnen</strong></p>
+<p><strong>Erst nach eigener Kodierung vergleichen!</strong></p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -2616,15 +2600,31 @@ Tipp
 </section>
 <section id="llm-vorkodierung-und-klassisches-ml" class="level2">
 <h2 class="anchored" data-anchor-id="llm-vorkodierung-und-klassisches-ml">5. LLM-Vorkodierung und klassisches ML</h2>
-<p>Für die dozierendenseitige Analyse wurden alle 895 Kompetenzzeilen zunächst mit <code>gpt-5.4-nano-2026-03-17</code> nach demselben Codebuch vorkodiert. Diese LLM-Labels sind <strong>Silver Labels</strong>: Sie ermöglichen ein großes Trainingsset, gelten aber nicht als unabhängige Wahrheit.</p>
-<p>Die Evaluation folgt vier Schritten:</p>
+<p>Für die Umsetzung eines supervised ML-Verfahrens benötigen wir eine umfassende Vorkodierung. Im Idealfall würden hier unabhängige Votings menschlicher Experten herangezogen werden. Für diese Übung haben wir stattdessen alle 895 Kompetenzzeilen zunächst mit <code>gpt-5.4-nano-2026-03-17</code> auf Basis des Codebuchs vorkodiert (dieser Schritt ist bereits ausgeführt – Sie benötigen keine OpenAI-API). Diese LLM-Labels sind <strong>Silver Labels</strong>: Sie ermöglichen ein großes Trainingsset, sind aber nicht der angestrebte Goldstandard.</p>
+<details>
+<summary>
+<strong>supervised ML</strong>
+</summary>
+Ein supervised-ML-Verfahren lernt aus Beispielen, bei denen das richtige Label bereits bekannt ist. Hier sieht das Modell Kompetenzzeilen mit der Zuordnung <code>digital</code> oder <code>nicht digital</code> und lernt daraus, neue Zeilen zu klassifizieren.
+</details>
+<details>
+<summary>
+<strong>API</strong>
+</summary>
+Eine API ist eine Programmierschnittstelle. Über sie kann ein Skript ein Modell wie OpenAI Nano automatisch ansprechen. In dieser Übung ist dieser Schritt bereits dozierendenseitig ausgeführt; Studierende benötigen keinen API-Schlüssel.
+</details>
+<p>Die folgende Evaluation folgt vier Schritten:</p>
 <ol type="1">
-<li>Identische Kompetenztexte werden zu Gruppen zusammengefasst, damit Dubletten nicht über Training und Test verteilt werden.</li>
 <li>805 Kompetenzzeilen bilden das Trainingsset mit LLM-Silver-Labels.</li>
-<li>90 zurückgehaltene Zeilen werden dozierendenseitig blind und ohne Kenntnis der LLM-Antworten kodiert. Diese Labels bilden den Goldstandard.</li>
+<li>90 zurückgehaltene Zeilen sind zudem dozierendenseitig blind und ohne Kenntnis der LLM-Antworten kodiert worden. Diese Labels bilden einen menschlichen Experten-Goldstandard.</li>
 <li>Sowohl das LLM als auch eine regularisierte logistische Regression mit TF-IDF-Wortmerkmalen werden gegen dieselben 90 Goldlabels geprüft.</li>
 </ol>
-<p>Der API-Schritt ist bereits dozierendenseitig durchgeführt. Für diese Übung werden weder API-Schlüssel noch kostenpflichtiger Modellzugang benötigt.</p>
+<details>
+<summary>
+<strong>TF-IDF-Wortmerkmale</strong>
+</summary>
+TF-IDF beschreibt Texte über Wörter und deren Gewicht. Ein Wort erhält ein hohes Gewicht, wenn es in einer Kompetenzzeile vorkommt, aber nicht überall im Datensatz auftaucht. Dadurch zählen eher unterscheidungskräftige Wörter als sehr häufige Allgemeinwörter.
+</details>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -2676,7 +2676,37 @@ Tipp
 </table>
 </div>
 </div>
-<p>Nur 11 der 90 Goldlabels sind digital. Deshalb reicht Accuracy allein nicht: Nano findet alle digitalen Fälle, erzeugt aber sieben False Positives. Das klassische ML erzeugt drei False Positives und drei False Negatives.</p>
+<details>
+<summary>
+<strong>Accuracy</strong>
+</summary>
+Accuracy ist der Anteil aller korrekt klassifizierten Fälle. Wenn 84 von 90 Fällen richtig sind, beträgt die Accuracy 84/90 = 0,93. Bei unausgewogenen Daten kann Accuracy aber täuschen.
+</details>
+<details>
+<summary>
+<strong>Precision</strong>
+</summary>
+Precision fragt: Von allen Fällen, die das Modell als digital klassifiziert, wie viele sind laut Goldstandard tatsächlich digital? Hohe Precision bedeutet wenige Fehlalarme.
+</details>
+<details>
+<summary>
+<strong>Recall</strong>
+</summary>
+Recall fragt: Von allen tatsächlich digitalen Fällen, wie viele findet das Modell? Hoher Recall bedeutet, dass wenige digitale Fälle übersehen werden.
+</details>
+<details>
+<summary>
+<strong>F1</strong>
+</summary>
+F1 fasst Precision und Recall in einer Kennzahl zusammen. Der Wert ist besonders nützlich, wenn beide Fehlerarten relevant sind: digitale Fälle nicht übersehen, aber auch nicht zu viele nicht-digitale Fälle fälschlich als digital markieren.
+</details>
+<details>
+<summary>
+<strong>False Positive / False Negative</strong>
+</summary>
+Ein False Positive ist ein Fehlalarm: Das Modell sagt <code>digital</code>, der Goldstandard sagt aber <code>nicht digital</code>. Ein False Negative ist ein übersehener digitaler Fall: Das Modell sagt <code>nicht digital</code>, der Goldstandard sagt aber <code>digital</code>.
+</details>
+<p>Die Stichprobe der handkodierten Fälle ist sehr ungleich verteilt. Nur 11 der 90 handkodierten Testfälle sind digitale Kompetenzen. Deshalb ist Accuracy allein wenig aussagekräftig: Ein Modell kann viele Fälle richtig klassifizieren, indem es fast immer „nicht digital“ vorhersagt. Nano erkennt zwar alle 11 digitalen Fälle, stuft aber zusätzlich 7 nicht-digitale Fälle fälschlich als digital ein. Das klassische ML ist konservativer: Es erzeugt 3 solche Fehlalarme, übersieht dafür aber 3 tatsächlich digitale Fälle.</p>
 <p>Erst nach dieser Evaluation wird das klassische Modell mit allen verfügbaren Silver- und Goldlabels neu geschätzt und auf den Gesamtkorpus angewandt:</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -2906,7 +2936,7 @@ Abbildung 2: Zusammenhang zwischen LLM- und ML-Anteilen auf Berufsebene
 <li>Dokumentieren Sie Dienst, angezeigten Modellnamen und Datum. Geben Sie keine personenbezogenen Daten in den Chat ein.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2915,7 +2945,7 @@ Tipp
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><strong>Vergleichswerte erst nach beiden Modellantworten öffnen</strong></p>
 <div class="cell">
