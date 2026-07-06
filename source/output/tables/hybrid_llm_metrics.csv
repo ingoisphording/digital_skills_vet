@@ -1,0 +1,2 @@
+evaluation,n,accuracy,precision,recall,f1,true_positive,true_negative,false_positive,false_negative
+OpenAI LLM gegen blinde Dozierendenreferenz,90,0.9222222222222223,0.6111111111111112,1,0.7586206896551725,11,72,7,0

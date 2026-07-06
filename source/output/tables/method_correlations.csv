@@ -1,0 +1,4 @@
+comparison,n,correlation
+Berufsebene: digitaler Anteil LLM vs. ML,5,0.9914782562466028
+Fallebene: LLM-Label vs. ML-Wahrscheinlichkeit,895,0.8755139420782759
+Fallebene: LLM-Label vs. ML-Label,895,0.8188019155127184

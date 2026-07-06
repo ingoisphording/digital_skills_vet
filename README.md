@@ -16,10 +16,11 @@ Analyseweg technisch nachvollziehen möchte, kann zusätzlich das vollständige
   gezielten Selbstlernauflösungen und kommentierten Skripten.
 
 Die Selbstlernfassung enthält Lösungen für die zehn Handkodierungsfälle und
-die fünf Fälle des Modellvergleichs. Für die Reproduktion des klassischen
-Modells wird außerdem ein auf die Analysevariablen reduzierter Datensatz
-bereitgestellt. Personenbezogene Dozierendenangaben, interne Vorlagen und
-Qualitätsberichte sind nicht Bestandteil des Repositorys.
+die fünf Fälle des Modellvergleichs. Die Seite dokumentiert außerdem die
+dozierendenseitige Evaluation auf 90 blind handkodierten Testfällen und stellt
+deren aggregierte Kennzahlen bereit. Personenbezogene Dozierendenangaben,
+API-Ausgaben, interne Vorlagen und Einzelfalllabels der blinden Evaluation
+sind nicht Bestandteil des Repositorys.
 
 ## R-Code lokal ausführen
 
@@ -36,12 +37,11 @@ Qualitätsberichte sind nicht Bestandteil des Repositorys.
 6. Einzelne Codeblöcke über den grünen Ausführungspfeil starten oder das
    gesamte Dokument mit **Render** erzeugen.
 
-Das klassische Modell lässt sich aus dem Ordner `source/` zusätzlich mit
-folgendem R-Befehl neu berechnen:
-
-```r
-source("scripts/08_classic_nlp.R")
-```
+Die Extraktion, Tabellen und studentischen Aufgaben lassen sich im
+öffentlichen Projekt nachvollziehen. Die vollständige dozierendenseitige
+Modellpipeline wird wegen der nicht veröffentlichten API-Ausgaben und
+Blindkodierungen nicht als unmittelbar reproduzierbarer Studierendenschritt
+ausgegeben.
 
 ## Lokale Vorschau
 

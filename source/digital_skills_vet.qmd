@@ -1,6 +1,6 @@
 ---
-title: "Text-as-data: Das Beispiel von Ausbildungsordnungen"
-subtitle: "Kompakte Übung zu digitalen Kompetenzen"
+title: "Übung zur Vorlesung ``Text-as-data: Das Beispiel von Ausbildungsordnungen''"
+subtitle: ""
 lang: de
 format:
   html:
@@ -25,6 +25,7 @@ params:
 
 library(readr)  # CSV-Dateien einlesen
 library(dplyr)  # Daten auswählen, verbinden und zusammenfassen
+library(ggplot2) # Grafiken erstellen
 library(knitr)  # Tabellen für die HTML-Seite formatieren
 
 read_utf8 <- function(path) {
@@ -49,25 +50,42 @@ browser_sample <- read_utf8(
 model_comparison_solution <- read_utf8(
   "data/self_study/model_comparison_solution.csv"
 )
-classic_metrics <- read_utf8(
-  "output/tables/classic_nlp_metrics.csv"
+hybrid_metrics <- bind_rows(
+  read_utf8("output/tables/hybrid_llm_metrics.csv"),
+  read_utf8("output/tables/hybrid_ml_metrics.csv")
 )
 all_predictions_summary <- read_utf8(
-  "output/tables/classic_nlp_all_predictions_summary.csv"
+  "output/tables/hybrid_ml_all_predictions_summary.csv"
+)
+method_shares_long <- read_utf8(
+  "output/tables/method_shares_by_occupation_long.csv"
+)
+method_shares <- read_utf8(
+  "output/tables/method_shares_by_occupation.csv"
+)
+method_correlations <- read_utf8(
+  "output/tables/method_correlations.csv"
 )
 ```
 
-Diese Übung demonstriert, wie aus amtlichen Ausbildungstexten eine
-quantitative Variable entsteht. Sie bearbeiten eine kleine Handkodierung,
-vollziehen ein klassisches Textklassifikationsmodell nach und vergleichen
-dessen Ergebnisse mit frei zugänglichen Chatmodellen. Planen Sie ungefähr
-**60 bis 75 Minuten** ein.
+In dieser Übung werden wir die in der Vorlesung behandelte Text-As-Data-Analyse von Ausbildungsordnungen praktisch nachvollziehen. Wir werden folgende Analyseschritte nachvollziehen bzw. selbst durchführen: 
+
+1. Ausbildungsordnungen als digitale Forschungsressource kennenlernen,
+2. die Extraktion einzelner Kompetenzzeilen aus den Rechtstexten nachvollziehen,
+3. Kompetenzen definieren und anhand eines Codebuchs handkodieren
+4. die automatisierte Vorkodierung mit einem Sprachmodell nachvollziehen,
+5. ein klassisches Textklassifikationsmodell auf diesen Daten trainieren,
+6. Sprachmodell, klassisches ML und menschliche Handkodierung anhand unabhängiger Testdaten vergleichen,
+7. ausgewählte Kompetenzzeilen selbst mit frei zugänglichen Chatmodellen klassifizieren und
+8. Stärken, Grenzen und Validierungsanforderungen der Verfahren diskutieren.
+
+Planen Sie ungefähr **60 bis 75 Minuten** ein. Die fertige Übung kann ohne Installation im Browser gelesen werden. 
+
 
 ::: {.callout-note collapse="true"}
 **Optional: R-Code selbst ausführen**
 
-Die fertige Übung kann ohne Installation im Browser gelesen werden. Wenn Sie
-den R-Code selbst ausführen möchten:
+Wenn Sie den R-Code selbst ausführen möchten:
 
 1. Installieren Sie [R über CRAN](https://cran.r-project.org/).
 2. Installieren Sie
@@ -88,13 +106,7 @@ den R-Code selbst ausführen möchten:
 
 ## 1. Ausbildungsordnungen als Ressource
 
-Ausbildungsordnungen sind standardisierte, rechtlich bindende Texte. Sie
-beschreiben unter anderem die Fertigkeiten, Kenntnisse und Fähigkeiten, die
-in einem Ausbildungsberuf vermittelt werden sollen. Ihre einheitliche Struktur
-macht Kompetenzanforderungen zwischen Berufen vergleichbar.
-
-Wir verwenden die jeweils aktuelle digitale Fassung von fünf
-Ausbildungsordnungen:
+Wir verwenden die jeweils aktuelle digitale Fassung von fünf Ausbildungsordnungen:
 
 ```{r}
 #| label: tab-quellen
@@ -123,9 +135,7 @@ werden dennoch die Ausbildungsordnungen, nicht eine zusätzliche Datenquelle.
 
 ## 2. Extraktion von Kompetenzen
 
-Zunächst müssen wir aus den digital vorliegenden Ausbildungsordnungen die
-jeweiligen Kompetenzzeilen extrahieren. Dazu dienen das kommentierte
-R-Skript zum
+Im ersten Schritt extrahieren wir die Kompetenzzeilen aus den digital vorliegenden Ausbildungsordnungen. Dazu dienen das kommentierte R-Skript zum 
 [Herunterladen der HTML-Seiten](source/scripts/01_download_html.R) und das
 R-Skript zur
 [Extraktion der Kompetenzzeilen](source/scripts/02_extract_curriculum_units.R).
@@ -159,6 +169,8 @@ Einige Ordnungen enthalten neben gemeinsamen Inhalten zusätzliche Zeilen für
 bestimmte Fachrichtungen oder Wahlqualifikationen. Eine einzelne Person
 absolviert nicht alle diese Alternativen. Die Variablen `track_type` und
 `track_name` halten deshalb fest, für wen eine Zeile gilt.
+
+xxx hier weitermachen xxx
 
 Fünf Beispielzeilen, die später erneut verwendet werden:
 
@@ -209,10 +221,12 @@ Bauchgefühl.
   Validierung.
 :::
 
-## 4. Übung: Handkodierung der Testdaten
+## 4. Übung: Handkodierung
 
-Kodieren Sie die folgenden zehn zurückgehaltenen Fälle. Diese Fälle werden
-später auch zur Prüfung des klassischen Modells verwendet.
+Kodieren Sie zunächst zehn Übungsfälle. Die kleine Auswahl dient dazu, das
+Codebuch anzuwenden und unterschiedliche Entscheidungen nachvollziehbar zu
+machen. Die eigentliche Modellevaluation in Schritt 5 verwendet eine davon
+getrennte, größere Testmenge.
 
 ```{r}
 #| label: tab-handkodierung
@@ -231,8 +245,8 @@ exercise_sample |>
 1. Laden Sie die
    [Kodiermaske](downloads/student_coding_template.csv) herunter.
 2. Vergeben Sie für jede Zeile `1` oder `0`.
-3. Ergänzen Sie eine Konfidenz zwischen `0` und `1` sowie eine kurze
-   Begründung.
+3. Ergänzen Sie eine Konfidenz von `0.25`, `0.50`, `0.75` oder `1.00` sowie
+   eine kurze Begründung.
 4. Verwenden Sie Lernziel, Berufsbildposition und Beruf als Kontext, aber
    unterstellen Sie keine nicht genannten Tätigkeiten.
 
@@ -254,42 +268,53 @@ coding_solution |>
 ```
 :::
 
-## 5. Klassisches ML auf allen Kompetenzzeilen
+## 5. LLM-Vorkodierung und klassisches ML
 
-Für eine größere Dozierendenstichprobe liegen 60 handkodierte
-Kompetenzzeilen vor. Das
-[kommentierte ML-Skript](source/scripts/08_classic_nlp.R) kombiniert Beruf,
-Berufsbildposition und Lernziel, berechnet TF-IDF-Wortmerkmale und schätzt
-eine regularisierte logistische Regression.
+Für die dozierendenseitige Analyse wurden alle 895 Kompetenzzeilen zunächst
+mit `gpt-5.4-nano-2026-03-17` nach demselben Codebuch vorkodiert. Diese
+LLM-Labels sind **Silver Labels**: Sie ermöglichen ein großes Trainingsset,
+gelten aber nicht als unabhängige Wahrheit.
 
-Die Vorgehensweise besteht aus zwei getrennten Schritten:
+Die Evaluation folgt vier Schritten:
 
-1. **Evaluation:** Zehn Fälle werden zurückgehalten. Das Modell wird mit den
-   übrigen 50 Fällen trainiert und auf den zehn unbekannten Fällen geprüft.
-   Zusätzlich wird jeder Beruf einmal vollständig zurückgehalten.
-2. **Korpusklassifikation:** Danach wird ein neues Modell mit allen 60
-   Dozierendenkodierungen trainiert und auf sämtliche 895 Kompetenzzeilen
-   angewandt.
+1. Identische Kompetenztexte werden zu Gruppen zusammengefasst, damit
+   Dubletten nicht über Training und Test verteilt werden.
+2. 805 Kompetenzzeilen bilden das Trainingsset mit LLM-Silver-Labels.
+3. 90 zurückgehaltene Zeilen werden dozierendenseitig blind und ohne Kenntnis
+   der LLM-Antworten kodiert. Diese Labels bilden den Goldstandard.
+4. Sowohl das LLM als auch eine regularisierte logistische Regression mit
+   TF-IDF-Wortmerkmalen werden gegen dieselben 90 Goldlabels geprüft.
 
-Die Evaluation ist aufgrund der kleinen Stichprobe nur illustrativ:
+Der API-Schritt ist bereits dozierendenseitig durchgeführt. Für diese Übung
+werden weder API-Schlüssel noch kostenpflichtiger Modellzugang benötigt.
 
 ```{r}
-#| label: tab-ml-guete
+#| label: tab-hybrid-guete
 #| echo: false
 
-classic_metrics |>
+hybrid_metrics |>
   transmute(
-    Auswertung = evaluation,
+    Verfahren = case_when(
+      grepl("OpenAI", evaluation) ~ "OpenAI Nano",
+      TRUE ~ "Klassisches ML"
+    ),
     Fälle = n,
     Accuracy = round(accuracy, 2),
     Precision = round(precision, 2),
     Recall = round(recall, 2),
-    F1 = round(f1, 2)
+    F1 = round(f1, 2),
+    `False Positives` = false_positive,
+    `False Negatives` = false_negative
   ) |>
-  kable(caption = "Illustrative Klassifikationsgüte")
+  kable(caption = "Evaluation auf 90 blind handkodierten Kompetenzzeilen")
 ```
 
-Das abschließende Modell klassifiziert den gesamten Korpus wie folgt:
+Nur 11 der 90 Goldlabels sind digital. Deshalb reicht Accuracy allein nicht:
+Nano findet alle digitalen Fälle, erzeugt aber sieben False Positives. Das
+klassische ML erzeugt drei False Positives und drei False Negatives.
+
+Erst nach dieser Evaluation wird das klassische Modell mit allen verfügbaren
+Silver- und Goldlabels neu geschätzt und auf den Gesamtkorpus angewandt:
 
 ```{r}
 #| label: tab-ml-korpus
@@ -305,16 +330,89 @@ all_predictions_summary |>
   kable(caption = "ML-Klassifikation aller Kompetenzzeilen")
 ```
 
-Die einzelnen Vorhersagen stehen im
-[vollständigen Ergebnisdatensatz](source/data/derived/classic_nlp_all_predictions.csv).
-Die Werte sind ein Demonstrationsergebnis, keine belastbare Rangliste der
-Berufe.
+Die folgende Abbildung zeigt, wie sensibel der berechnete digitale Anteil auf
+das verwendete Klassifikationsverfahren reagiert. Verglichen werden hier zwei
+Verfahren, die für alle 895 Kompetenzzeilen vorliegen: die LLM-Vorkodierung
+und das abschließende klassische ML-Modell.
+
+```{r}
+#| label: fig-methodenanteile
+#| echo: false
+#| fig-cap: "Digitaler Kompetenzanteil nach Ausbildungsberuf und Klassifikationsverfahren"
+#| fig-width: 8
+#| fig-height: 5
+
+method_shares_long |>
+  mutate(
+    occupation = gsub("/.*", "", occupation),
+    occupation = reorder(occupation, digital_share, mean),
+    method = factor(method, levels = c("LLM-Vorkodierung", "Klassisches ML"))
+  ) |>
+  ggplot(aes(x = occupation, y = digital_share, fill = method)) +
+  geom_col(position = position_dodge(width = 0.75), width = 0.65) +
+  coord_flip() +
+  scale_y_continuous(
+    labels = function(x) paste0(round(100 * x), " %"),
+    limits = c(0, 0.75)
+  ) +
+  labs(
+    x = NULL,
+    y = "Anteil digital klassifizierter Kompetenzzeilen",
+    fill = "Verfahren"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+Die Unterschiede sind kein technisches Detail, sondern inhaltlich relevant:
+Das LLM stuft insgesamt mehr Zeilen als digital ein. Das klassische ML-Modell
+ist nach der Prüfung gegen die 90 handkodierten Goldlabels konservativer,
+insbesondere bei den Elektronikerinnen und Elektronikern.
+
+Auf Berufsebene beträgt die Korrelation zwischen den LLM- und ML-Anteilen
+`r round(method_correlations$correlation[method_correlations$comparison == "Berufsebene: digitaler Anteil LLM vs. ML"], 2)`.
+Die Rangfolge der Berufe ist also ähnlich, die absolute Höhe der Anteile
+unterscheidet sich aber.
+
+```{r}
+#| label: fig-llm-ml-korrelation
+#| echo: false
+#| fig-cap: "Zusammenhang zwischen LLM- und ML-Anteilen auf Berufsebene"
+#| fig-width: 6
+#| fig-height: 5
+
+method_shares |>
+  mutate(occupation_short = gsub("/.*", "", occupation)) |>
+  ggplot(aes(x = llm_digital_share, y = ml_digital_share)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey50") +
+  geom_point(size = 3) +
+  geom_text(aes(label = occupation_short), nudge_y = 0.025, size = 3.3) +
+  scale_x_continuous(
+    labels = function(x) paste0(round(100 * x), " %"),
+    limits = c(0, 0.75)
+  ) +
+  scale_y_continuous(
+    labels = function(x) paste0(round(100 * x), " %"),
+    limits = c(0, 0.75)
+  ) +
+  labs(
+    x = "Digitaler Anteil nach LLM-Vorkodierung",
+    y = "Digitaler Anteil nach klassischem ML"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+Die Werte bleiben ein Demonstrationsergebnis und sind keine belastbare
+Rangliste der Berufe. Insbesondere sind fachrichtungs- und
+wahlqualifikationsspezifische Zeilen nicht für jede ausgebildete Person
+gemeinsames Curriculum.
 
 ## 6. Vergleich: ML und eigene Handkodierung
 
 Vergleichen Sie nun Ihre zehn Labels mit der Dozierendenreferenz und den
-Vorhersagen des Modells. Die ML-Werte stammen ausschließlich aus dem Modell,
-das diese zehn Fälle beim Training nicht gesehen hat.
+Anwendungsprognosen des abschließenden klassischen Modells. Diese
+Einzelfallprognosen illustrieren die Modellanwendung; die unabhängige
+Güteprüfung ist die 90-Fälle-Evaluation aus Schritt 5.
 
 ```{r}
 #| label: tab-vergleich-hand-ml
@@ -322,13 +420,15 @@ das diese zehn Fälle beim Training nicht gesehen hat.
 
 coding_solution |>
   transmute(
-    ID = unit_id,
+    Kompetenzzeile = learning_goal_text,
     Referenz = reference_label,
+    `LLM-Label` = llm_label,
+    `LLM-Konfidenz` = round(llm_confidence, 2),
     `ML-Wahrscheinlichkeit` = round(model_probability, 2),
     `ML-Label` = model_label,
     Ergebnis = error_type
   ) |>
-  kable(caption = "Referenz und ML auf den zehn Testfällen")
+  kable(caption = "Referenz, LLM und ML auf den zehn Testfällen")
 ```
 
 Beantworten Sie kurz:
@@ -338,11 +438,19 @@ Beantworten Sie kurz:
 3. Liegt die Abweichung eher an einzelnen Wörtern, am beruflichen Kontext oder
    an der Arbeitsdefinition?
 
-## 7. Händische Klassifikation mit Chatmodellen
+## 7. Sensibilität der LLM-Klassifikation
 
-Nun klassifizieren zwei frei zugängliche Chatmodelle dieselben fünf Fälle, die
-in Schritt 2 als Beispiele angezeigt wurden. Eine API oder lokale
-LLM-Installation ist nicht erforderlich.
+LLM-Klassifikationen sind nicht vollständig deterministisch und hängen stark
+von der konkreten Anwendungssituation ab. Kleine Änderungen am Prompt können
+zu anderen Labels oder Begründungen führen. Selbst bei identischem Prompt
+können verschiedene Modelle unterschiedliche Entscheidungen treffen, weil sie
+anders trainiert, anders abgestimmt oder anders in das jeweilige Chatprodukt
+eingebettet sind.
+
+In diesem Schritt testen Sie diese Sensibilität händisch. Zwei frei zugängliche
+Chatmodelle klassifizieren dieselben fünf Fälle, die in Schritt 2 als Beispiele
+angezeigt wurden. Eine API oder lokale LLM-Installation ist dafür nicht
+erforderlich.
 
 1. Wählen Sie zwei Chatmodelle, beispielsweise ChatGPT und Gemini.
 2. Beginnen Sie bei jedem Modell einen neuen Chat.
