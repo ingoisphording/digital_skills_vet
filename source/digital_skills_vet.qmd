@@ -318,36 +318,29 @@ hybrid_metrics |>
 ```
 
 ::: {.callout-note collapse="true"}
-## Begriffserklärung: Accuracy
+## Begriffserklärung: Accuracy, Precision und Recall
 
-Accuracy ist, gemeinsam mit Precision und Recall, eine Metrik, um die
-Vorhersagegüte eines Modells zu beschreiben. Sie misst den Anteil aller korrekt
+Accuracy, Precision und Recall sind Metriken, um die Vorhersagegüte eines
+Modells zu beschreiben. **Accuracy** misst den Anteil aller korrekt
 klassifizierten Fälle. Wenn 84 von 90 Fällen richtig sind, beträgt die Accuracy
-84/90 = 0,93. Bei unausgewogenen Daten kann Accuracy aber täuschen.
-:::
+84/90 = 0,93. Bei unausgewogenen Daten kann Accuracy aber täuschen, weil ein
+Modell viele Fälle richtig klassifizieren kann, indem es fast immer die häufige
+Kategorie vorhersagt.
 
-::: {.callout-note collapse="true"}
-## Begriffserklärung: Precision
+**Precision** fragt: Von allen Fällen, die das Modell als digital klassifiziert,
+wie viele sind laut Goldstandard tatsächlich digital? Hohe Precision bedeutet
+wenige Fehlalarme. Ein solcher Fehlalarm heißt **False Positive**: Das Modell
+sagt `digital`, der Goldstandard sagt aber `nicht digital`.
 
-Precision fragt: Von allen Fällen, die das Modell als digital klassifiziert, wie viele sind laut Goldstandard tatsächlich digital? Hohe Precision bedeutet wenige Fehlalarme.
-:::
+**Recall** fragt umgekehrt: Von allen tatsächlich digitalen Fällen, wie viele
+findet das Modell? Hoher Recall bedeutet, dass wenige digitale Fälle übersehen
+werden. Ein übersehener digitaler Fall heißt **False Negative**: Das Modell sagt
+`nicht digital`, der Goldstandard sagt aber `digital`.
 
-::: {.callout-note collapse="true"}
-## Begriffserklärung: Recall
-
-Recall fragt: Von allen tatsächlich digitalen Fällen, wie viele findet das Modell? Hoher Recall bedeutet, dass wenige digitale Fälle übersehen werden.
-:::
-
-::: {.callout-note collapse="true"}
-## Begriffserklärung: F1
-
-F1 fasst Precision und Recall in einer Kennzahl zusammen. Der Wert ist besonders nützlich, wenn beide Fehlerarten relevant sind: digitale Fälle nicht übersehen, aber auch nicht zu viele nicht-digitale Fälle fälschlich als digital markieren.
-:::
-
-::: {.callout-note collapse="true"}
-## Begriffserklärung: False Positive / False Negative
-
-Ein False Positive ist ein Fehlalarm: Das Modell sagt `digital`, der Goldstandard sagt aber `nicht digital`. Ein False Negative ist ein übersehener digitaler Fall: Das Modell sagt `nicht digital`, der Goldstandard sagt aber `digital`.
+**F1** fasst Precision und Recall in einer Kennzahl zusammen. Der Wert ist
+besonders nützlich, wenn beide Fehlerarten relevant sind: digitale Fälle nicht
+übersehen, aber auch nicht zu viele nicht-digitale Fälle fälschlich als digital
+markieren.
 :::
 
 Die Stichprobe der handkodierten Fälle ist sehr ungleich verteilt. Nur 11 der 90 handkodierten Testfälle sind digitale Kompetenzen. Deshalb ist Accuracy allein wenig aussagekräftig: Ein Modell kann viele Fälle richtig klassifizieren, indem es fast immer „nicht digital“ vorhersagt. Nano erkennt zwar alle 11 digitalen Fälle, stuft aber zusätzlich 7 nicht-digitale Fälle fälschlich als digital ein. Das klassische ML ist konservativer: Es erzeugt 3 solche Fehlalarme, übersieht dafür aber 3 tatsächlich digitale Fälle.
